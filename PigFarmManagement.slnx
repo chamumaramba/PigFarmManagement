@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="PigFarmManagement.Api/PigFarmManagement.Api.csproj" />
+  <Project Path="PigFarmManagement.Application/PigFarmManagement.Application.csproj" />
+  <Project Path="PigFarmManagement.Client/PigFarmManagement.Client.csproj" />
+  <Project Path="PigFarmManagement.Domain/PigFarmManagement.Domain.csproj" />
+  <Project Path="PigFarmManagement.Infrastructure/PigFarmManagement.Infrastructure.csproj" />
+</Solution>
