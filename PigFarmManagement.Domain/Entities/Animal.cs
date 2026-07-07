@@ -44,5 +44,6 @@ namespace PigFarmManagement.Domain.Entities
         public ICollection<HealthRecord> HealthRecords { get; set; } = new List<HealthRecord>();
         public ICollection<AnimalMovement> AnimalMovements { get; set; } = new List<AnimalMovement>();
         public ICollection<BreedingRecord> BreedingRecords { get; set; } = new List<BreedingRecord>();
+
     }
 }

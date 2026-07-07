@@ -7,6 +7,14 @@ namespace PigFarmManagement.Domain.Entities
 {
     public class Treatment
     {
-        
+        public Guid Id { get; set; }
+        public Guid BatchId { get; set; }
+        public Batch Batch { get; set; } = null!;
+        public Guid AnimalId { get; set; }
+        public Animal Animal { get; set; } = null!;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime TreatmentDate { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }
