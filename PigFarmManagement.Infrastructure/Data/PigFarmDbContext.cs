@@ -31,5 +31,31 @@ namespace PigFarmManagement.Infrastructure.Data
         {
 
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Animal>(entity =>
+            {
+                entity.HasOne(a => a.Sow)
+                    .WithMany()
+                    .HasForeignKey(a => a.SowId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(a => a.Boar)
+                    .WithMany()
+                    .HasForeignKey(a => a.BoarId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(a => a.Batch)
+                    .WithMany(b => b.Animals)
+                    .HasForeignKey(a => a.BatchId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasMany(a => a.BreedingRecords)
+                    .WithOne(b => b.Animal)
+                    .HasForeignKey(b => b.AnimalId);
+            });
+        }
     }
 }
