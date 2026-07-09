@@ -24,23 +24,14 @@ namespace PigFarmManagement.Api.Controller
         [HttpPost("create")]
         public async Task<IActionResult> CreateAsync(CreateFarmRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var farm = await _farmService.CreateAsync(request, cancellationToken);
-                return Ok(
-                    ApiResponse<FarmResponse>.SuccessResponse(
-                    farm,
-                    "Farm created successfully"
+            var farm = await _farmService.CreateAsync(request, cancellationToken);
+            return Ok(
+                ApiResponse<FarmResponse>.SuccessResponse(
+                farm,
+                "Farm created successfully"
                 ));
             }
-            catch (Exception)
-            {
-                return BadRequest(
-                    ApiResponse<FarmResponse>.ErrorResponse(
-                    null,
-                    "An error occured"
-                ));
-            }
+
 
         }
     }
