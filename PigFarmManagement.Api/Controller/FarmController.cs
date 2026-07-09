@@ -29,10 +29,7 @@ namespace PigFarmManagement.Api.Controller
                 ApiResponse<FarmResponse>.SuccessResponse(
                 farm,
                 "Farm created successfully"
-                ));
-            }
-
-
+            ));
         }
     }
 }

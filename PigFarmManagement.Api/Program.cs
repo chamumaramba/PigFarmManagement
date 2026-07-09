@@ -9,6 +9,7 @@ using PigFarmManagement.Infrastructure.Extensions;
 using PigFarmManagement.Infrastructure.Identity;
 using PigFarmManagement.Infrastructure.Repository;
 using Microsoft.OpenApi;
+using PigFarmManagement.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +46,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
 
 builder.Services.AddScoped<IAnimalRepository, AnimalRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFarmService, FarmService>();
+builder.Services.AddScoped<IFarmRepository, FarmRepository>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? string.Empty;
 
