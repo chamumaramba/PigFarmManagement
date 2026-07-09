@@ -34,15 +34,16 @@ namespace PigFarmManagement.Api.Controller
 
             if (!result.Succeeded)
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse(result.Errors));
+                return BadRequest(ApiResponse<object>.ErrorResponse(result.Errors, "Registration failed."));
             }
 
-            if (result.TokenData is null)
-            {
-                return BadRequest(ApiResponse<object>.ErrorResponse(new[] { "Token generation failed." }));
-            }
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.TokenData));
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Registration successful."));
         }
+
+       /*  public async Task<IActionResult> ChangePassword()
+        {
+            var user = await _authService.;
+
+        } */
     }
 }

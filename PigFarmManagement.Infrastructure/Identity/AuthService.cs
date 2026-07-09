@@ -75,9 +75,30 @@ namespace PigFarmManagement.Infrastructure.Identity
             return Task.FromResult(false);
         }
 
-        public Task<RegisterResponse> RegisterAsync(RegisterRequest request)
+        public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
-            return Task.FromResult(new RegisterResponse(false, new[] { "Registration is not implemented yet." }));
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                return new RegisterResponse(false, new[] { "Email is already registered." });
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName
+            };
+
+            var result = await _userManager.CreateAsync(user, request.Password);
+
+            if (!result.Succeeded)
+            {
+                return new RegisterResponse(false, result.Errors.Select(e => e.Description));
+            }
+
+            return new RegisterResponse(true, Enumerable.Empty<string>());
         }
 
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
@@ -115,6 +136,20 @@ namespace PigFarmManagement.Infrastructure.Identity
         private int GetJwtDurationInMinutes()
         {
             return int.TryParse(_configuration["Jwt:DurationInMinutes"], out var minutes) ? minutes : 60;
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(string username, string currentPassword, string newPassword)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+
+                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
+            }
+
+
+            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+
         }
     }
 }

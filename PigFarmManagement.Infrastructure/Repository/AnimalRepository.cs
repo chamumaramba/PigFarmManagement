@@ -1,43 +1,53 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
+using Microsoft.EntityFrameworkCore;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Domain.Entities;
-
+using PigFarmManagement.Infrastructure.Data;
 namespace PigFarmManagement.Infrastructure.Repository
 {
     public class AnimalRepository : IAnimalRepository
     {
-        public Task AddAsync(Animal animal, CancellationToken cancellationToken = default)
+        private readonly PigFarmDbContext _context;
+        public AnimalRepository(PigFarmDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
         }
 
-        public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task AddAsync(Animal animal, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await _context.Animals.AddAsync(animal, cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Animals.AnyAsync(a => a.Id == id, cancellationToken);
         }
 
         public Task<Animal?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-            => Task.FromResult<Animal?>(null);
+        {
+            return _context.Animals
+                .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        }
 
         public Task<Animal?> GetByTagNumberAsync(string tagNumber, CancellationToken cancellationToken = default)
-            => Task.FromResult<Animal?>(null);
+        {
+            return _context.Animals
+                .FirstOrDefaultAsync(a => a.TagNumber == tagNumber, cancellationToken);
+        }
 
         public void Remove(Animal animal)
         {
-            throw new NotImplementedException();
+            _context.Animals.Remove(animal);
         }
 
-        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public void Update(Animal animal)
         {
-            throw new NotImplementedException();
+            _context.Animals.Update(animal);
         }
     }
 }

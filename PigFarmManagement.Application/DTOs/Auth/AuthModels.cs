@@ -27,8 +27,7 @@ namespace PigFarmManagement.Application.DTOs.Auth
 
     public record RegisterResponse(
     bool Succeeded,
-    IEnumerable<string>? Errors = null,
-    TokenResponse? TokenData = null
+    IEnumerable<string>? Errors = null
 );
 
 }

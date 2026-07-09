@@ -5,16 +5,35 @@ using Microsoft.IdentityModel.Tokens;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Infrastructure.Data;
+using PigFarmManagement.Infrastructure.Extensions;
 using PigFarmManagement.Infrastructure.Identity;
 using PigFarmManagement.Infrastructure.Repository;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options => {
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("Bearer", document),
+            new List<string>()
+        }
+    });
 
+});
 var dbPath = Path.Combine(builder.Environment.ContentRootPath, "Data", "PigFarmManagement.db");
 
 builder.Services.AddDbContext<PigFarmDbContext>(options =>
@@ -47,29 +66,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
-
-    var roles = new[]
-    {
-        AppRoles.Admin,
-        AppRoles.FarmManager,
-        AppRoles.FarmWorker,
-        AppRoles.Veterinarian
-    };
-
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new ApplicationRole(role));
-        }
-    }
-}
+await app.SeedIdentityAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
