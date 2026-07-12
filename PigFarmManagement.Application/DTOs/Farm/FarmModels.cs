@@ -19,6 +19,7 @@ namespace PigFarmManagement.Application.DTOs
             Guid Id,
             string Name,
             string Location,
+            string FarmCode,
             string Currency,
             string TimeZone,
             DateTime CreatedAt,

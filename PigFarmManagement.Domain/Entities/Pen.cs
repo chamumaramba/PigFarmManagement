@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PigFarmManagement.Domain.Common;
 using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class Pen
+    public class Pen:BaseEntity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public Farm Farm { get; set; } = null!;
         public Guid BuildingId { get; set; }

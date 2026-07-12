@@ -14,7 +14,7 @@ using PigFarmManagement.Application.DTOs.Auth;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Infrastructure.Data;
-using System.Security.Cryptography;
+using PigFarmManagement.Application.Interfaces.Services;
 
 namespace PigFarmManagement.Infrastructure.Identity
 {
@@ -195,18 +195,26 @@ namespace PigFarmManagement.Infrastructure.Identity
             return int.TryParse(_configuration["Jwt:DurationInMinutes"], out var minutes) ? minutes : 60;
         }
 
-        public async Task<IdentityResult> ChangePasswordAsync(string username, string currentPassword, string newPassword)
+        public async Task<ChangePasswordResponse> ChangePasswordAsync(string username, string currentPassword, string newPassword)
         {
             var user = await _userManager.FindByNameAsync(username);
             if (user == null)
             {
-
-                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
+                user = await _userManager.FindByEmailAsync(username);
             }
 
+            if (user == null)
+            {
+                return new ChangePasswordResponse(false, new[] { "User not found." });
+            }
 
-            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            if (!result.Succeeded)
+            {
+                return new ChangePasswordResponse(false, result.Errors.Select(e => e.Description));
+            }
 
+            return new ChangePasswordResponse(true);
         }
     }
 }

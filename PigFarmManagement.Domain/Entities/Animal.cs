@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PigFarmManagement.Domain.Common;
 using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class Animal
+    public class Animal: BaseEntity
     {
-        public Guid Id { get; set; }
-
         public string TagNumber { get; set; } = string.Empty;
         public DateTime DateOfBirth { get; set; }
         public decimal BirthWeight { get; set; }
@@ -33,10 +32,6 @@ namespace PigFarmManagement.Domain.Entities
         // Status
         public AnimalStatus Status { get; set; }
         public ProductionStage ProductionStage { get; set; }
-
-        // Dates
-        public DateTime? CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
 
         public string? Notes { get; set; }
 

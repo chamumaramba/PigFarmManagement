@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PigFarmManagement.Application.DTOs;
+using PigFarmManagement.Application.Helpers;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Domain.Entities;
@@ -19,12 +20,15 @@ namespace PigFarmManagement.Application.Services
             {
                 throw new InvalidOperationException("A farm with this name already exists.");
             }
+            var farmCount = await _repo.GetFarmcountAsync(cancellationToken);
+            var farmcode = FarmCodeGenerator.GenerateFarmCode(request.Name, farmCount + 1);
 
             var farm = new Farm
 
             {
                 Id = Guid.NewGuid(),
                 Name = request.Name,
+                FarmCode = farmcode,
                 Location = request.Location,
                 Currency = request.Currency,
                 TimeZone = request.TimeZone,
@@ -49,10 +53,24 @@ namespace PigFarmManagement.Application.Services
                 throw new KeyNotFoundException("Farm not found.");
             }
 
-            farm.IsActive = false;
+            farm.IsDeleted = true;
             _repo.Update(farm);
 
             await _repo.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<FarmResponse> ActivateFarmAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var farm = await _repo.GetByIdAsync(id, cancellationToken);
+            if (farm == null)
+            {
+                throw new KeyNotFoundException("Farm not found.");
+            }
+
+            farm.IsDeleted = false;
+            _repo.Update(farm);
+            await _repo.SaveChangesAsync(cancellationToken);
+            return MapToFarmResponse(farm);
         }
 
         public async Task<IEnumerable<FarmResponse>> GetAllAsync(CancellationToken cancellationToken)
@@ -94,11 +112,13 @@ namespace PigFarmManagement.Application.Services
             return MapToFarmResponse(farm);
         }
 
+
         private FarmResponse MapToFarmResponse(Farm farm)
         {
             return new FarmResponse(
                 farm.Id,
                 farm.Name,
+                farm.FarmCode,
                 farm.Location,
                 farm.Currency,
                 farm.TimeZone,

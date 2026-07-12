@@ -13,6 +13,7 @@ namespace PigFarmManagement.Application.Interfaces.Repositories
         void Update(Farm farm);
         Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
         Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default);
+        Task<int> GetFarmcountAsync(CancellationToken cancellationToken = default);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
 
 

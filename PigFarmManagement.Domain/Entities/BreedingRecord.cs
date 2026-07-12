@@ -1,11 +1,11 @@
 using System;
+using PigFarmManagement.Domain.Common;
 using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class BreedingRecord
+    public class BreedingRecord: BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid AnimalId { get; set; }
         public Animal Animal { get; set; } = null!;
 

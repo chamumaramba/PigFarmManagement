@@ -26,15 +26,15 @@ namespace PigFarmManagement.Infrastructure.Identity
             UserManager<ApplicationUser> userManager,
             IConfiguration configuration)
         {
-            var adminEmail = (configuration["DevelopmentSeed:AdminEmail"] ?? "admin@pigfarm.local").Trim();
-            var adminPassword = configuration["DevelopmentSeed:AdminPassword"] ?? "Password@123";
+            var adminEmail = (configuration["DevelopmentSeed:AdminEmail"]
+                ?? "admin@pigfarm.local").Trim();
 
-            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
-            {
-                return;
-            }
+            var adminPassword = configuration["DevelopmentSeed:AdminPassword"]
+                ?? "Password@123";
+
 
             var admin = await userManager.FindByEmailAsync(adminEmail);
+
             if (admin == null)
             {
                 admin = new ApplicationUser
@@ -46,28 +46,29 @@ namespace PigFarmManagement.Infrastructure.Identity
                     LastName = "User"
                 };
 
-                var createResult = await userManager.CreateAsync(admin, adminPassword);
+                var createResult = await userManager.CreateAsync(
+                    admin,
+                    adminPassword);
+
                 if (createResult.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(admin, AppRoles.Admin);
+                    await userManager.AddToRoleAsync(
+                        admin,
+                        AppRoles.Admin);
                 }
 
                 return;
             }
 
-            admin.UserName = adminEmail;
-            admin.Email = adminEmail;
-            admin.EmailConfirmed = true;
-            admin.FirstName = "Admin";
-            admin.LastName = "User";
 
-            await userManager.UpdateAsync(admin);
+            // User already exists
+            // Do not reset password here
 
-            var token = await userManager.GeneratePasswordResetTokenAsync(admin);
-            var passwordResult = await userManager.ResetPasswordAsync(admin, token, adminPassword);
-            if (passwordResult.Succeeded)
+            if (!await userManager.IsInRoleAsync(admin, AppRoles.Admin))
             {
-                await userManager.AddToRoleAsync(admin, AppRoles.Admin);
+                await userManager.AddToRoleAsync(
+                    admin,
+                    AppRoles.Admin);
             }
         }
     }

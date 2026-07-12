@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PigFarmManagement.Domain.Common;
 using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class Batch
+    public class Batch: BaseEntity
     {
-        public Guid Id { get; set; }
         public string BatchNumber { get; set; } = string.Empty;
         public Guid PenId { get; set; }
         public Pen Pen { get; set; } = null!;

@@ -12,5 +12,6 @@ namespace PigFarmManagement.Application.Interfaces.Services
         Task<IEnumerable<FarmResponse>> GetAllAsync(CancellationToken cancellationToken);
         Task<IReadOnlyList<FarmResponse>> GetUserFarmAsync(Guid userId, CancellationToken cancellationToken);
         Task DeactivateFarmAsync(Guid id, CancellationToken cancellationToken);
+        Task<FarmResponse> ActivateFarmAsync(Guid id, CancellationToken cancellationToken);
     }
 }

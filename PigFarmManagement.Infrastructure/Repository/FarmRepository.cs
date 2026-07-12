@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Domain.Entities;
@@ -29,7 +24,7 @@ namespace PigFarmManagement.Infrastructure.Repository
             return await _context.Farms
             .AsNoTracking()
             .Include(f => f.Building)
-            .Where(f => f.IsActive)
+            .Where(f => f.IsDeleted == false)
             .ToListAsync(cancellationToken);
         }
 
@@ -38,7 +33,7 @@ namespace PigFarmManagement.Infrastructure.Repository
             return await _context.Farms
                 .AsNoTracking()
                 .Include(f => f.Building)
-                .FirstOrDefaultAsync(f => f.Id == id && f.IsActive, cancellationToken);
+                .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
         }
 
         public async Task<Farm?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -46,7 +41,7 @@ namespace PigFarmManagement.Infrastructure.Repository
             return await _context.Farms
                 .AsNoTracking()
                 .Include(f => f.Building)
-                .FirstOrDefaultAsync(f => f.Name == name && f.IsActive, cancellationToken);
+                .FirstOrDefaultAsync(f => f.Name == name && f.IsDeleted, cancellationToken);
         }
 
         public async Task<IReadOnlyList<Farm>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -56,7 +51,7 @@ namespace PigFarmManagement.Infrastructure.Repository
             return await _context.Farms
                 .AsNoTracking()
                 .Include(f => f.Building)
-                .Where(f => f.IsActive && _context.Users.Any(u =>
+                .Where(f => f.IsDeleted && _context.Users.Any(u =>
                     u.Id == identityUserId && u.IsActive && u.FarmId == f.Id))
                 .ToListAsync(cancellationToken);
         }
@@ -80,5 +75,8 @@ namespace PigFarmManagement.Infrastructure.Repository
         {
             _context.Farms.Update(farm);
         }
+
+        public async Task<int> GetFarmcountAsync(CancellationToken cancellationToken = default)
+            => await _context.Farms.CountAsync(cancellationToken);
     }
 }
