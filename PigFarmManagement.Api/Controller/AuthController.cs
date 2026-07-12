@@ -22,10 +22,28 @@ namespace PigFarmManagement.Api.Controller
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(
+                    ApiResponse<object?>.ErrorResponse(
+                        null,
+                        "Invalid request."
+                    ));
             }
             var user = await _authService.LoginAsync(request);
-            return user is null ? Unauthorized() : Ok(user);
+
+             if (user == null)
+            {
+                return Unauthorized(
+                    ApiResponse<object?>.ErrorResponse(
+                        null,
+                        "Invalid email or password."
+                    ));
+            }
+
+            return Ok(
+                ApiResponse<TokenResponse>.SuccessResponse(
+                    user,
+                    "Login successful."
+            ));
         }
 
         [HttpPost("register")]
@@ -56,10 +74,26 @@ namespace PigFarmManagement.Api.Controller
             return NoContent();
         }
 
-       /*  public async Task<IActionResult> ChangePassword()
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
-            var user = await _authService.;
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        } */
+
+            var result = await _authService.ChangePasswordAsync(request.Email, request.CurrentPassword, request.NewPassword);
+            if (!result.Succeeded)
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse(result.Errors, "Password change failed."));
+            }
+
+            return Ok(
+                ApiResponse<string>.SuccessResponse(
+                    "Password changed successfully."
+                )
+            );
+        }
     }
 }

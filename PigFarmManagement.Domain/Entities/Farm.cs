@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PigFarmManagement.Domain.Common;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class Farm
+    public class Farm: BaseEntity
     {
-       public Guid Id { get; set; }
-       public string Name { get; set; }
-       public string Location { get; set; }
-       public string Currency { get; set; }
-       public string TimeZone { get; set; }
-       public DateTime CreatedAt { get; set; }
-       public bool IsActive { get; set; } = true;
-       public ICollection<Building> Building { get; set; }
+       public string Name { get; set; } = string.Empty;
+       public string FarmCode { get; set; } = string.Empty;
+       public string Location { get; set; } = string.Empty;
+       public string Currency { get; set; } = string.Empty;
+       public string TimeZone { get; set; } = string.Empty;
+       public ICollection<Building> Building { get; set; } = new List<Building>();
     }
 }

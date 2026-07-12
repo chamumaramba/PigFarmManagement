@@ -1,10 +1,10 @@
 using System;
+using PigFarmManagement.Domain.Common;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class AnimalMovement
+    public class AnimalMovement: BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid AnimalId { get; set; }
         public Animal Animal { get; set; } = null!;
 
@@ -14,6 +14,5 @@ namespace PigFarmManagement.Domain.Entities
         public DateTime MovementDate { get; set; }
         public string Reason { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
-        public string RecordedBy { get; set; } = string.Empty;
     }
 }

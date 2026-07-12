@@ -8,3 +8,4 @@ obj/
 *.log
 *.sqlite
 appsettings.Development.json
+commands/

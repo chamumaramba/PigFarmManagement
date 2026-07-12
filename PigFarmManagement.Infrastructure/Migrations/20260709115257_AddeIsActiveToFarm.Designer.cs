@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PigFarmManagement.Infrastructure.Data;
 
@@ -10,9 +11,11 @@ using PigFarmManagement.Infrastructure.Data;
 namespace PigFarmManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(PigFarmDbContext))]
-    partial class PigFarmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260709115257_AddeIsActiveToFarm")]
+    partial class AddeIsActiveToFarm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -137,10 +140,7 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<int>("Breed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("CurrentWeight")
@@ -150,9 +150,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Gender")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Notes")
@@ -172,9 +169,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -197,17 +191,8 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<Guid>("AnimalId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("FromPenId")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("MovementDate")
                         .HasColumnType("TEXT");
@@ -220,13 +205,11 @@ namespace PigFarmManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("RecordedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("ToPenId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -250,15 +233,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<Guid>("PenId")
                         .HasColumnType("TEXT");
 
@@ -267,12 +241,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -293,20 +261,11 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<Guid?>("BoarId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime?>("ExpectedFarrowingDate")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("FarrowingDate")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
 
                     b.Property<bool?>("IsPregnant")
                         .HasColumnType("INTEGER");
@@ -330,12 +289,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<Guid?>("SowId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AnimalId");
@@ -353,32 +306,11 @@ namespace PigFarmManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("FarmId")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -397,18 +329,11 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("FarmCode")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Location")
@@ -421,12 +346,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
 
                     b.Property<string>("TimeZone")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -446,29 +365,14 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<Guid>("BatchId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("FeedTypeId")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("QuantityIssuedKg")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RecordedBy")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -484,12 +388,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<decimal>("DailyFeedAmount")
                         .HasColumnType("TEXT");
 
@@ -497,9 +395,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("FeedsPerDay")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("MaximumAge")
@@ -517,12 +412,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<int>("ProductionStage")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
                     b.ToTable("FeedPrograms");
@@ -537,27 +426,12 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -577,12 +451,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<Guid>("BatchId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Dosage")
                         .HasColumnType("TEXT");
 
@@ -595,22 +463,17 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<int>("HealthRecordType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("RecordDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("RecordedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Status")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("WeightKg")
@@ -637,17 +500,8 @@ namespace PigFarmManagement.Infrastructure.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("FarmId")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -655,12 +509,6 @@ namespace PigFarmManagement.Infrastructure.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

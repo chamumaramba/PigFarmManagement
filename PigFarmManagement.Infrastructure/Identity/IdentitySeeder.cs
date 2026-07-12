@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace PigFarmManagement.Infrastructure.Identity
 {
     public static class IdentitySeeder
     {
-        public static async Task SeedRoleAsync(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        public static async Task SeedRoleAsync(RoleManager<ApplicationRole> roleManager)
         {
-            // Seed roles
-            var roles = new[] { "Admin", "FarmManger", "Veterinarian", "FarmWorker" };
+            var roles = new[] { AppRoles.Admin, AppRoles.FarmManager, AppRoles.Veterinarian, AppRoles.FarmWorker };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -20,12 +20,21 @@ namespace PigFarmManagement.Infrastructure.Identity
                 }
             }
 
-        }    // Seed admin user
-        public static async Task SeedAdminAsync(UserManager<ApplicationUser> userManager)
+        }
+
+        public static async Task SeedDevelopmentAdminAsync(
+            UserManager<ApplicationUser> userManager,
+            IConfiguration configuration)
         {
-            var adminEmail = "admin@pigfarm.com";
+            var adminEmail = (configuration["DevelopmentSeed:AdminEmail"]
+                ?? "admin@pigfarm.local").Trim();
+
+            var adminPassword = configuration["DevelopmentSeed:AdminPassword"]
+                ?? "Password@123";
+
 
             var admin = await userManager.FindByEmailAsync(adminEmail);
+
             if (admin == null)
             {
                 admin = new ApplicationUser
@@ -37,11 +46,29 @@ namespace PigFarmManagement.Infrastructure.Identity
                     LastName = "User"
                 };
 
-                var result = await userManager.CreateAsync(admin, "Password@123");
-                if (result.Succeeded)
+                var createResult = await userManager.CreateAsync(
+                    admin,
+                    adminPassword);
+
+                if (createResult.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(admin, "Admin");
+                    await userManager.AddToRoleAsync(
+                        admin,
+                        AppRoles.Admin);
                 }
+
+                return;
+            }
+
+
+            // User already exists
+            // Do not reset password here
+
+            if (!await userManager.IsInRoleAsync(admin, AppRoles.Admin))
+            {
+                await userManager.AddToRoleAsync(
+                    admin,
+                    AppRoles.Admin);
             }
         }
     }

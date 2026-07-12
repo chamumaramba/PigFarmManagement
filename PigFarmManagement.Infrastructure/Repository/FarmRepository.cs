@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Domain.Entities;
@@ -24,29 +19,49 @@ namespace PigFarmManagement.Infrastructure.Repository
             await _context.Farms.AddAsync(farm, cancellationToken);
         }
 
-        public async Task<IEnumerable<Farm>> GetAll(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Farm>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Farms
-            .Where(f => f.IsActive)
+            .AsNoTracking()
+            .Include(f => f.Building)
+            .Where(f => f.IsDeleted == false)
             .ToListAsync(cancellationToken);
         }
 
         public async Task<Farm?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Farms.FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+            return await _context.Farms
+                .AsNoTracking()
+                .Include(f => f.Building)
+                .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
         }
 
         public async Task<Farm?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
         {
-            return await _context.Farms.FirstOrDefaultAsync(f => f.Name == name, cancellationToken);
+            return await _context.Farms
+                .AsNoTracking()
+                .Include(f => f.Building)
+                .FirstOrDefaultAsync(f => f.Name == name && f.IsDeleted, cancellationToken);
         }
 
-        public async Task<bool> IsExistAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Farm>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            var identityUserId = userId.ToString();
+
+            return await _context.Farms
+                .AsNoTracking()
+                .Include(f => f.Building)
+                .Where(f => f.IsDeleted && _context.Users.Any(u =>
+                    u.Id == identityUserId && u.IsActive && u.FarmId == f.Id))
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Farms.AnyAsync(f => f.Id == id, cancellationToken);
         }
 
-        public async Task<bool> IsExistByNameAsync(string name, CancellationToken cancellationToken = default)
+        public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             return await _context.Farms.AnyAsync(f => f.Name == name, cancellationToken);
         }
@@ -56,9 +71,12 @@ namespace PigFarmManagement.Infrastructure.Repository
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public void UpdateAsync(Farm farm)
+        public void Update(Farm farm)
         {
             _context.Farms.Update(farm);
         }
+
+        public async Task<int> GetFarmcountAsync(CancellationToken cancellationToken = default)
+            => await _context.Farms.CountAsync(cancellationToken);
     }
 }

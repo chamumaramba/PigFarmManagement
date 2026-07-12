@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PigFarmManagement.Application.DTOs.Auth;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Infrastructure.Data;
+using PigFarmManagement.Application.Interfaces.Services;
 
 namespace PigFarmManagement.Infrastructure.Identity
 {
@@ -31,12 +34,12 @@ namespace PigFarmManagement.Infrastructure.Identity
             _configuration = configuration;
         }
 
-        public async Task SaveRefreshTokenAsync(string userId, string refreshToken)
+        private async Task SaveRefreshTokenAsync(string userId, string refreshToken)
         {
             await _pigFarmDbContext.RefreshTokens.AddAsync(new RefreshToken
             {
                 UserId = userId,
-                Token = refreshToken,
+                Token = HashToken(refreshToken),
                 ExpiresAt = DateTime.UtcNow.AddDays(7)
             });
 
@@ -45,10 +48,11 @@ namespace PigFarmManagement.Infrastructure.Identity
 
         public async Task<TokenResponse?> LoginAsync(LoginRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null)
+            var normalizedEmail = request.Email?.Trim();
+            var user = await _userManager.FindByEmailAsync(normalizedEmail);
+            if (user == null && !string.IsNullOrWhiteSpace(normalizedEmail))
             {
-                user = await _userManager.FindByNameAsync(request.Email);
+                user = await _userManager.FindByNameAsync(normalizedEmail);
             }
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
@@ -57,7 +61,7 @@ namespace PigFarmManagement.Infrastructure.Identity
             }
 
             var accessToken = await GenerateJwtTokenAsync(user);
-            var refreshToken = Guid.NewGuid().ToString("N");
+            var refreshToken = CreateRefreshToken();
             var expiresAt = DateTime.UtcNow.AddMinutes(GetJwtDurationInMinutes());
 
             await SaveRefreshTokenAsync(user.Id, refreshToken);
@@ -65,18 +69,53 @@ namespace PigFarmManagement.Infrastructure.Identity
             return new TokenResponse(accessToken, refreshToken, expiresAt);
         }
 
-        public Task<TokenResponse?> RefreshTokenAsync(RefreshTokenRequest request)
+        public async Task<TokenResponse?> RefreshTokenAsync(RefreshTokenRequest request)
         {
-            return Task.FromResult<TokenResponse?>(null);
+            var storedToken = await _pigFarmDbContext.RefreshTokens
+                .SingleOrDefaultAsync(token => token.Token == HashToken(request.RefreshToken));
+
+            if (storedToken is null || !storedToken.IsActive)
+            {
+                return null;
+            }
+
+            var user = await _userManager.FindByIdAsync(storedToken.UserId);
+            if (user is null || !user.IsActive)
+            {
+                return null;
+            }
+
+            storedToken.IsUsed = true;
+            var newRefreshToken = CreateRefreshToken();
+            await SaveRefreshTokenAsync(user.Id, newRefreshToken);
+
+            var accessToken = await GenerateJwtTokenAsync(user);
+            var expiresAt = DateTime.UtcNow.AddMinutes(GetJwtDurationInMinutes());
+            return new TokenResponse(accessToken, newRefreshToken, expiresAt);
         }
 
-        public Task<bool> RevokeTokenAsync(string token)
+        public async Task<bool> RevokeTokenAsync(string token)
         {
-            return Task.FromResult(false);
+            var storedToken = await _pigFarmDbContext.RefreshTokens
+                .SingleOrDefaultAsync(refreshToken => refreshToken.Token == HashToken(token));
+
+            if (storedToken is null || storedToken.IsRevoked)
+            {
+                return false;
+            }
+
+            storedToken.IsRevoked = true;
+            await _pigFarmDbContext.SaveChangesAsync();
+            return true;
         }
 
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
+            if (request.Password != request.ConfirmPassword)
+            {
+                return new RegisterResponse(false, new[] { "Password and confirmation password must match." });
+            }
+
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
@@ -88,7 +127,9 @@ namespace PigFarmManagement.Infrastructure.Identity
                 UserName = request.Email,
                 Email = request.Email,
                 FirstName = request.FirstName,
-                LastName = request.LastName
+                LastName = request.LastName,
+                Position = request.Position,
+                EmployeeId = request.EmployeeId
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
@@ -99,6 +140,16 @@ namespace PigFarmManagement.Infrastructure.Identity
             }
 
             return new RegisterResponse(true, Enumerable.Empty<string>());
+        }
+
+        private static string CreateRefreshToken()
+        {
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        }
+
+        private static string HashToken(string token)
+        {
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
         }
 
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
@@ -123,6 +174,12 @@ namespace PigFarmManagement.Infrastructure.Identity
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+            var keyHash = Convert.ToBase64String(
+                SHA256.HashData(Encoding.UTF8.GetBytes(jwtKey))
+            );
+
+            Console.WriteLine($"[TOKEN GENERATION] JWT Key Hash: {keyHash}");
+
             var token = new JwtSecurityToken(
                 issuer,
                 audience,
@@ -138,18 +195,26 @@ namespace PigFarmManagement.Infrastructure.Identity
             return int.TryParse(_configuration["Jwt:DurationInMinutes"], out var minutes) ? minutes : 60;
         }
 
-        public async Task<IdentityResult> ChangePasswordAsync(string username, string currentPassword, string newPassword)
+        public async Task<ChangePasswordResponse> ChangePasswordAsync(string username, string currentPassword, string newPassword)
         {
             var user = await _userManager.FindByNameAsync(username);
             if (user == null)
             {
-
-                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
+                user = await _userManager.FindByEmailAsync(username);
             }
 
+            if (user == null)
+            {
+                return new ChangePasswordResponse(false, new[] { "User not found." });
+            }
 
-            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            if (!result.Succeeded)
+            {
+                return new ChangePasswordResponse(false, result.Errors.Select(e => e.Description));
+            }
 
+            return new ChangePasswordResponse(true);
         }
     }
 }

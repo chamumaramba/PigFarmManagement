@@ -28,6 +28,16 @@ namespace PigFarmManagement.Application.DTOs.Auth
     public record RegisterResponse(
     bool Succeeded,
     IEnumerable<string>? Errors = null
-);
+    );
 
+    public record ChangePasswordRequest(
+        string Email,
+        string CurrentPassword,
+        string NewPassword
+    );
+
+    public record ChangePasswordResponse(
+        bool Succeeded,
+        IEnumerable<string>? Errors = null
+    );
 }

@@ -1,11 +1,11 @@
 
+using PigFarmManagement.Domain.Common;
 using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class FeedProgram
+    public class FeedProgram:BaseEntity
     {
-        public Guid Id { get; set; }
         public ProductionStage ProductionStage { get; set; }
         public int MinimumAge { get; set; }
         public int MaximumAge { get; set; }

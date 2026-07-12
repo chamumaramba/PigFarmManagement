@@ -13,6 +13,7 @@ namespace PigFarmManagement.Application.Interfaces.Services
         Task<TokenResponse?> RefreshTokenAsync(RefreshTokenRequest request);
         Task<bool> RevokeTokenAsync(string token);
         Task<RegisterResponse> RegisterAsync(RegisterRequest request);
+        Task<ChangePasswordResponse> ChangePasswordAsync(string username, string currentPassword, string newPassword);
     }
 
 }
