@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PigFarmManagement.Infrastructure.Identity;
 
@@ -11,7 +12,7 @@ namespace PigFarmManagement.Infrastructure.Extensions
 {
     public static class ApplicationBuilderExtensions
     {
-        public static async Task SeedIdentityAsync(this IApplicationBuilder app)
+        public static async Task SeedDevelopmentIdentityAsync(this IApplicationBuilder app, IConfiguration configuration)
         {
            using var scope = app.ApplicationServices.CreateScope();
            var roleManager =
@@ -21,8 +22,8 @@ namespace PigFarmManagement.Infrastructure.Extensions
             var userManager = scope.ServiceProvider
             .GetRequiredService<UserManager<ApplicationUser>>();
 
-            await IdentitySeeder.SeedRoleAsync(userManager, roleManager);
-            await IdentitySeeder.SeedAdminAsync(userManager);
+            await IdentitySeeder.SeedRoleAsync(roleManager);
+            await IdentitySeeder.SeedDevelopmentAdminAsync(userManager, configuration);
 
         }
     }

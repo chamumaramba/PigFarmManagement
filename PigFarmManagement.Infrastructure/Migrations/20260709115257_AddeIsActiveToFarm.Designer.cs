@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PigFarmManagement.Infrastructure.Data;
 
@@ -10,9 +11,11 @@ using PigFarmManagement.Infrastructure.Data;
 namespace PigFarmManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(PigFarmDbContext))]
-    partial class PigFarmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260709115257_AddeIsActiveToFarm")]
+    partial class AddeIsActiveToFarm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
