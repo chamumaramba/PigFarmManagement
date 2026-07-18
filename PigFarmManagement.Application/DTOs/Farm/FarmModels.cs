@@ -23,7 +23,10 @@ namespace PigFarmManagement.Application.DTOs
             string Currency,
             string TimeZone,
             DateTime CreatedAt,
-            int BuildingCount
+            int BuildingCount,
+            bool IsDeleted
+
+
         );
 
         public record UpdateFarmRequest(

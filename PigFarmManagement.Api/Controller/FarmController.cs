@@ -14,21 +14,15 @@ namespace PigFarmManagement.Api.Controller
 {
     [ApiController]
     [Route("api/[controller]")]
-    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = AppRoles.Admin)]
-    public class FarmController : ControllerBase
+    public class FarmController(IFarmService farmService) : ControllerBase
     {
-        private readonly IFarmService _farmService;
-
-        public FarmController(IFarmService farmService)
-        {
-            _farmService = farmService;
-        }
+        private readonly IFarmService _farmService = farmService;
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CreateFarmRequest request, CancellationToken cancellationToken)
         {
-            var farm = await _farmService.CreateAsync(request, cancellationToken);
+            var farm = await _farmService.AddAsync(request, cancellationToken);
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = farm.Id },
@@ -90,12 +84,29 @@ namespace PigFarmManagement.Api.Controller
         [Authorize(Roles = "Admin, FarmManager")]
         public async Task<IActionResult> Update(Guid id, UpdateFarmRequest request, CancellationToken cancellationToken)
         {
-            var updatedFarm = await _farmService.UpdateAsync(id, request, cancellationToken);
+            var updatedFarm = await _farmService.Update(id, request, cancellationToken);
             return Ok(ApiResponse<FarmResponse>.SuccessResponse(
                 updatedFarm,
                 "Farm succesfully updated."
             ));
 
+        }
+
+        [HttpGet("name/{name}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> FarmByName(string name, CancellationToken cancellationToken)
+        {
+            var farm = await _farmService.GetByNameAsync(name, cancellationToken);
+            if (farm is null)
+            {
+                return NotFound(ApiResponse<FarmResponse>.ErrorResponse(
+                    null,
+                    "Farm not found."));
+            }
+
+            return Ok(ApiResponse<FarmResponse>.SuccessResponse(
+                farm
+            ));
         }
     }
 }
