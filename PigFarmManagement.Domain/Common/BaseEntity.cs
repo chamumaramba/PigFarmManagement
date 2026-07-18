@@ -14,7 +14,7 @@ namespace PigFarmManagement.Domain.Common
 
         public string? CreatedBy { get; set; }
 
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public string? UpdatedBy { get; set; }
 

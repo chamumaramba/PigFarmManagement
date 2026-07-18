@@ -8,17 +8,18 @@ using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Domain.Entities;
 using static PigFarmManagement.Application.DTOs.FarmModels;
+using PigFarmManagement.Application.Mappings;
 
 namespace PigFarmManagement.Application.Services
 {
     public class FarmService(IFarmRepository repo) : IFarmService
     {
         private readonly IFarmRepository _repo = repo;
-        public async Task<FarmResponse> CreateAsync(CreateFarmRequest request, CancellationToken cancellationToken)
+        public async Task<FarmResponse> AddAsync(CreateFarmRequest request, CancellationToken cancellationToken)
         {
             if (await _repo.ExistsByNameAsync(request.Name, cancellationToken))
             {
-                throw new InvalidOperationException("A farm with this name already exists.");
+                throw new InvalidOperationException("A farm with the same name already exists.");
             }
             var farmCount = await _repo.GetFarmcountAsync(cancellationToken);
             var farmcode = FarmCodeGenerator.GenerateFarmCode(request.Name, farmCount + 1);
@@ -40,7 +41,7 @@ namespace PigFarmManagement.Application.Services
 
 
 
-            return MapToFarmResponse(farm);
+            return FarmMapper.ToResponse(farm);
 
         }
 
@@ -61,43 +62,41 @@ namespace PigFarmManagement.Application.Services
 
         public async Task<FarmResponse> ActivateFarmAsync(Guid id, CancellationToken cancellationToken)
         {
-            var farm = await _repo.GetByIdAsync(id, cancellationToken);
-            if (farm == null)
-            {
-                throw new KeyNotFoundException("Farm not found.");
-            }
+            var farm = await _repo.GetByIdAsync(id, cancellationToken)
+                ?? throw new KeyNotFoundException("Farm not found.");
 
             farm.IsDeleted = false;
             _repo.Update(farm);
             await _repo.SaveChangesAsync(cancellationToken);
-            return MapToFarmResponse(farm);
+            return FarmMapper.ToResponse(farm);
         }
 
         public async Task<IEnumerable<FarmResponse>> GetAllAsync(CancellationToken cancellationToken)
         {
             var farms = await _repo.GetAllAsync(cancellationToken);
-            return farms.Select(MapToFarmResponse).ToList();
+
+            return FarmMapper.ToResponseList(farms);
         }
 
         public async Task<FarmResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var farm = await _repo.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException("Farm not found.");
-            return MapToFarmResponse(farm);
+            return FarmMapper.ToResponse(farm);
         }
 
         public async Task<FarmResponse> GetByNameAsync(string name, CancellationToken cancellationToken)
         {
             var farm = await _repo.GetByNameAsync(name, cancellationToken) ?? throw new KeyNotFoundException("Farm not found.");
-            return MapToFarmResponse(farm);
+            return FarmMapper.ToResponse(farm);
         }
 
         public async Task<IReadOnlyList<FarmResponse>> GetUserFarmAsync(Guid userId, CancellationToken cancellationToken)
         {
             var farmUser = await _repo.GetByUserIdAsync(userId, cancellationToken);
-            return farmUser.Select(MapToFarmResponse).ToList();
+            return farmUser.Select(FarmMapper.ToResponse).ToList();
         }
 
-        public async Task<FarmResponse> UpdateAsync(Guid id, FarmModels.UpdateFarmRequest request, CancellationToken cancellationToken)
+        public async Task<FarmResponse> Update(Guid id, FarmModels.UpdateFarmRequest request, CancellationToken cancellationToken)
         {
             var farm = await _repo.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException("Farm not found.");
 
@@ -109,22 +108,10 @@ namespace PigFarmManagement.Application.Services
             _repo.Update(farm);
             await _repo.SaveChangesAsync(cancellationToken);
 
-            return MapToFarmResponse(farm);
+            return FarmMapper.ToResponse(farm);
         }
 
 
-        private FarmResponse MapToFarmResponse(Farm farm)
-        {
-            return new FarmResponse(
-                farm.Id,
-                farm.Name,
-                farm.FarmCode,
-                farm.Location,
-                farm.Currency,
-                farm.TimeZone,
-                farm.CreatedAt,
-                farm.Building?.Count ?? 0
-            );
-        }
+
     }
 }
