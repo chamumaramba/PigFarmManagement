@@ -6,7 +6,7 @@ using PigFarmManagement.Domain.Common;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class FeedInventory:BaseEntity
+    public class FeedInventory:FarmEntity
     {
         public Guid FeedTypeId { get; set; }
         public decimal QuantityInStockKg { get; set; }

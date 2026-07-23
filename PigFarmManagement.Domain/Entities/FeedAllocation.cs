@@ -6,7 +6,7 @@ using PigFarmManagement.Domain.Common;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class FeedAllocation:BaseEntity
+    public class FeedAllocation: FarmEntity
     {
         public Guid BatchId { get; set; }
         public Batch? Batch { get; set; }

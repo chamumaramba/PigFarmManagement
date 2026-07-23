@@ -13,6 +13,8 @@ using PigFarmManagement.Application.Services;
 using PigFarmManagement.Api.Infrastructure;
 using System.Text;
 using System.Security.Cryptography;
+using FluentValidation;
+using PigFarmManagement.Application.DTOs.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +59,10 @@ else if (connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgn
     }
 }
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<ICurrentUserServices, CurrentUserService>();
+
 builder.Services.AddDbContext<PigFarmDbContext>(options =>
     options.UseSqlite(connectionString));
 
@@ -68,6 +74,8 @@ builder.Services.AddScoped<IAnimalRepository, AnimalRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFarmService, FarmService>();
 builder.Services.AddScoped<IFarmRepository, FarmRepository>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT signing key is not configured. Set Jwt__Key outside source control.");

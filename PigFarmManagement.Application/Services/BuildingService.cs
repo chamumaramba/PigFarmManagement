@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PigFarmManagement.Application.DTOs.Building;
+using PigFarmManagement.Application.Helpers;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Application.Mappings;
@@ -11,11 +12,18 @@ using static PigFarmManagement.Application.DTOs.Building.BuildingModels;
 
 namespace PigFarmManagement.Application.Services
 {
-    public class BuildingService(IBuildingRepository repo) : IBuildingService
+    public class BuildingService(
+        IBuildingRepository repo,
+        IFarmRepository farmRepo,
+        ICurrentUserServices userServices)
+        : IBuildingService
     {
         private readonly IBuildingRepository _repo = repo;
+        private readonly IFarmRepository _farmRepo = farmRepo;
+        private readonly ICurrentUserServices _currentUserServices = userServices;
         public async Task ActivateAsync(Guid id, CancellationToken cancellationToken)
         {
+            var farmId = _currentUserServices.FarmId;
             var building = await _repo.GetByIdAsync(id, cancellationToken);
             if (building == null)
             {
@@ -29,17 +37,31 @@ namespace PigFarmManagement.Application.Services
 
         public async Task<BuildingResponse> AddAsync(CreateBuildingRequest buildingRequest, CancellationToken cancellationToken)
         {
-            if (await _repo.BuildingNameExistsAsync(buildingRequest.FarmId, buildingRequest.Name, cancellationToken))
+            var farmId = _currentUserServices.FarmId;
+            if (await _repo.BuildingNameExistsAsync(farmId, buildingRequest.Name, cancellationToken))
             {
                 throw new InvalidOperationException("Building with the same name already exists");
             }
+
+            var farm = await _farmRepo.GetByIdAsync(
+                farmId,
+                cancellationToken)
+                ?? throw new KeyNotFoundException("Farm not found.");
+
+            var buildingSequence = farm.Buildings.Count + 1;
+
+            var buildingCode = BuildingCodeGenerator.Generate(
+                farm.FarmCode,
+                buildingSequence);
+
             var building = new Building
             {
                 Id = Guid.NewGuid(),
                 Name = buildingRequest.Name,
+                BuildingCode = buildingCode,
                 Status = buildingRequest.Status,
                 Type = buildingRequest.Type,
-                FarmId = buildingRequest.FarmId
+                FarmId = farm.Id
 
             };
 

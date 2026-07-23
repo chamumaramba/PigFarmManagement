@@ -4,12 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PigFarmManagement.Application.Interfaces.Repositories;
+using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Infrastructure.Data;
 
 namespace PigFarmManagement.Infrastructure.Repository
 {
-    public class PenRepository(PigFarmDbContext context) :Repository<Pen>(context), IPenRepository
+    public class PenRepository(PigFarmDbContext context, ICurrentUserServices currentUserServices)
+        : Repository<Pen>(context, currentUserServices), IPenRepository
     {
         public async Task<bool> ExistsInBuildingAsync(Guid buildingId, string name, CancellationToken cancellationToken)
             => await _context.Pens

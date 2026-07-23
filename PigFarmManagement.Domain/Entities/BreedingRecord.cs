@@ -4,7 +4,7 @@ using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class BreedingRecord: BaseEntity
+    public class BreedingRecord: FarmEntity
     {
         public Guid AnimalId { get; set; }
         public Animal Animal { get; set; } = null!;

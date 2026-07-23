@@ -7,11 +7,18 @@ using Microsoft.EntityFrameworkCore;
 using PigFarmManagement.Infrastructure.Identity;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Infrastructure.Data;
+using PigFarmManagement.Application.Interfaces.Services;
 
 namespace PigFarmManagement.Infrastructure.Data
 {
-    public class PigFarmDbContext:IdentityDbContext<ApplicationUser, ApplicationRole, string>
+    public class PigFarmDbContext(
+        DbContextOptions<PigFarmDbContext> options,
+        ICurrentUserServices currentUserServices)
+        : IdentityDbContext<ApplicationUser,
+        ApplicationRole,
+        string>(options)
     {
+        private readonly ICurrentUserServices _currentUserServices = currentUserServices;
         public DbSet<FeedType> FeedTypes { get; set; }
         public DbSet<Animal> Animals { get; set; }
         public DbSet<Batch> Batches { get; set; }
@@ -27,10 +34,8 @@ namespace PigFarmManagement.Infrastructure.Data
         public DbSet<AnimalMovement> AnimalMovements { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-        public PigFarmDbContext(DbContextOptions<PigFarmDbContext> options):base(options)
-        {
+        public Guid CurrentFarmId => _currentUserServices.FarmId;
 
-        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -56,6 +61,42 @@ namespace PigFarmManagement.Infrastructure.Data
                     .WithOne(b => b.Animal)
                     .HasForeignKey(b => b.AnimalId);
             });
+
+            modelBuilder.Entity<Building>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<Pen>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<Animal>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<HealthRecord>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<BreedingRecord>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<FeedAllocation>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<FeedProgram>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<Treatment>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<VaccinationSchedule>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<WeightRecord>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<AnimalMovement>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+
+            modelBuilder.Entity<Batch>()
+                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
         }
     }
 }

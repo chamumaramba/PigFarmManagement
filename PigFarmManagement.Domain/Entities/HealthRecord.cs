@@ -7,7 +7,7 @@ using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class HealthRecord:BaseEntity
+    public class HealthRecord:FarmEntity
     {
         public Guid BatchId { get; set; }
         public Batch Batch { get; set; } = null!;

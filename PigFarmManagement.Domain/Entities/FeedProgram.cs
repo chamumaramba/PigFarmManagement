@@ -4,7 +4,7 @@ using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class FeedProgram:BaseEntity
+    public class FeedProgram:FarmEntity
     {
         public ProductionStage ProductionStage { get; set; }
         public int MinimumAge { get; set; }

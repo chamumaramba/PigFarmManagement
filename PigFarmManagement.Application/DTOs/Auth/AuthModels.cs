@@ -1,8 +1,13 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace PigFarmManagement.Application.DTOs.Auth
 {
-    public record LoginRequest(string Email, string Password);
+
+    public record LoginRequest(
+        [Required] string Email,
+
+        [Required] string Password);
 
     public record RegisterRequest(
         string FirstName,

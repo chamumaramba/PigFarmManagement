@@ -12,7 +12,7 @@ namespace PigFarmManagement.Application.DTOs.Building
             string Name,
             BuildingType Type,
             BuildingStatus Status,
-            Guid FarmId
+            int NumberOfPens
         );
 
         public record UpdateBuildingRequest(
