@@ -23,7 +23,7 @@ namespace PigFarmManagement.Application.Services
         private readonly ICurrentUserServices _currentUserServices = userServices;
         public async Task ActivateAsync(Guid id, CancellationToken cancellationToken)
         {
-            var farmId = _currentUserServices.FarmId;
+            //var farmId = _currentUserServices.FarmId;
             var building = await _repo.GetByIdAsync(id, cancellationToken);
             if (building == null)
             {

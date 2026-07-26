@@ -10,13 +10,13 @@ namespace PigFarmManagement.Application.DTOs.Batch
     {
         public record CreateBatchRequest(
             string BatchCode,
-            DateTime ConceptionDate,
             DateTime StartDate,
+            DateTime EndDate,
             BatchStatus Status
         );
 
         public record UpdateBatchRequest(
-            DateTime ConceptionDate,
+            DateTime EndDate,
             DateTime StartDate,
             BatchStatus Status
         );
@@ -41,7 +41,9 @@ namespace PigFarmManagement.Application.DTOs.Batch
             Guid Id,
             string BatchCode,
             BatchStatus Status,
-            int AnimalCount
+            int AnimalCount,
+            DateTime StartDate,
+            DateTime? EndDate
         );
     }
 }

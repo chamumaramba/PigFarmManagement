@@ -10,8 +10,9 @@ namespace PigFarmManagement.Domain.Entities
     public class Batch: FarmEntity
     {
         public string BatchCode { get; set; } = string.Empty;
-        public DateTime ConceptionDate  { get; set;}
+        //public DateTime ConceptionDate  { get; set;}
         public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public BatchStatus Status { get; set; }
 
         public ICollection<Animal> Animals { get; set; } = new List<Animal>();

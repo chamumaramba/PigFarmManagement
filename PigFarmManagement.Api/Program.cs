@@ -71,6 +71,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IAnimalRepository, AnimalRepository>();
+builder.Services.AddScoped<IBatchRepository, BatchRepository>();
+builder.Services.AddScoped<IBatchService, BatchService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFarmService, FarmService>();
 builder.Services.AddScoped<IFarmRepository, FarmRepository>();

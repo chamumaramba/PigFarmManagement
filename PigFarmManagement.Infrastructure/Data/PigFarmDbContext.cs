@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PigFarmManagement.Infrastructure.Identity;
 using PigFarmManagement.Domain.Entities;
-using PigFarmManagement.Infrastructure.Data;
+using PigFarmManagement.Domain.Common;
 using PigFarmManagement.Application.Interfaces.Services;
 
 namespace PigFarmManagement.Infrastructure.Data
@@ -19,6 +16,7 @@ namespace PigFarmManagement.Infrastructure.Data
         string>(options)
     {
         private readonly ICurrentUserServices _currentUserServices = currentUserServices;
+
         public DbSet<FeedType> FeedTypes { get; set; }
         public DbSet<Animal> Animals { get; set; }
         public DbSet<Batch> Batches { get; set; }
@@ -34,12 +32,34 @@ namespace PigFarmManagement.Infrastructure.Data
         public DbSet<AnimalMovement> AnimalMovements { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-        public Guid CurrentFarmId => _currentUserServices.FarmId;
+        /// <summary>
+        /// Returns the current user's FarmId, or Guid.Empty when no HTTP context
+        /// is present (e.g. migrations, role seeding, background jobs).
+        /// Queries executed with Guid.Empty will return no farm-owned records,
+        /// which is the correct behaviour for unauthenticated contexts.
+        /// </summary>
+        public Guid CurrentFarmId
+        {
+            get
+            {
+                try
+                {
+                    var farmId = _currentUserServices.FarmId;
+                    return farmId;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // No authenticated HTTP context (migration, seeding, background job).
+                    return Guid.Empty;
+                }
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // ── Animal relationship configuration ────────────────────────────
             modelBuilder.Entity<Animal>(entity =>
             {
                 entity.HasOne(a => a.Sow)
@@ -62,41 +82,57 @@ namespace PigFarmManagement.Infrastructure.Data
                     .HasForeignKey(b => b.AnimalId);
             });
 
-            modelBuilder.Entity<Building>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+            // ── Automatic query filters for all FarmEntity subclasses ────────
+            // Applies:  WHERE FarmId = @CurrentFarmId AND IsDeleted = 0
+            // Any new entity that inherits FarmEntity is automatically covered.
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (!typeof(FarmEntity).IsAssignableFrom(entityType.ClrType))
+                    continue;
 
-            modelBuilder.Entity<Pen>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                var clrType = entityType.ClrType;
 
-            modelBuilder.Entity<Animal>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // x
+                var parameter = Expression.Parameter(clrType, "x");
 
-            modelBuilder.Entity<HealthRecord>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // x.FarmId
+                var farmIdProperty = Expression.Property(parameter, nameof(FarmEntity.FarmId));
 
-            modelBuilder.Entity<BreedingRecord>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // this.CurrentFarmId  (resolved at query time, not model-building time)
+                var currentFarmId = Expression.Property(
+                    Expression.Constant(this),
+                    nameof(CurrentFarmId));
 
-            modelBuilder.Entity<FeedAllocation>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // x.FarmId == this.CurrentFarmId
+                var farmIdFilter = Expression.Equal(farmIdProperty, currentFarmId);
 
-            modelBuilder.Entity<FeedProgram>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // x.IsDeleted
+                var isDeletedProperty = Expression.Property(parameter, nameof(BaseEntity.IsDeleted));
 
-            modelBuilder.Entity<Treatment>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // !x.IsDeleted
+                var notDeleted = Expression.Not(isDeletedProperty);
 
-            modelBuilder.Entity<VaccinationSchedule>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // x.FarmId == this.CurrentFarmId && !x.IsDeleted
+                var combined = Expression.AndAlso(farmIdFilter, notDeleted);
 
-            modelBuilder.Entity<WeightRecord>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                // x => x.FarmId == this.CurrentFarmId && !x.IsDeleted
+                var lambda = Expression.Lambda(combined, parameter);
 
-            modelBuilder.Entity<AnimalMovement>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+                modelBuilder.Entity(clrType).HasQueryFilter(lambda);
+            }
 
-            modelBuilder.Entity<Batch>()
-                .HasQueryFilter(x => x.FarmId == CurrentFarmId);
+            // ── FarmId indexes for high-volume entities ──────────────────────
+            // Every query is scoped by FarmId; these indexes make that fast.
+            modelBuilder.Entity<Animal>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<Batch>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<Building>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<Pen>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<WeightRecord>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<FeedAllocation>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<VaccinationSchedule>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<Treatment>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<BreedingRecord>().HasIndex(x => x.FarmId);
+            modelBuilder.Entity<AnimalMovement>().HasIndex(x => x.FarmId);
         }
     }
 }
