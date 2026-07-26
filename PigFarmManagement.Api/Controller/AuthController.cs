@@ -12,7 +12,6 @@ namespace PigFarmManagement.Api.Controller
 {
     [ApiController]
     [Route("api/[controller]")]
-    [AllowAnonymous]
     public class AuthController(IAuthService authService) : ControllerBase
     {
         private readonly IAuthService _authService = authService;
@@ -47,6 +46,7 @@ namespace PigFarmManagement.Api.Controller
         }
 
         [HttpPost("register")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
 

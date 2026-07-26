@@ -15,8 +15,7 @@ namespace PigFarmManagement.Infrastructure.Identity
         public string? Position { get; set; }
         public string? EmployeeId { get; set; }
         public bool IsActive { get; set; } = true;
-        public Guid?
-         FarmId { get; set; }
+        public Guid? FarmId { get; set; }
         public Farm? Farm{ get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;

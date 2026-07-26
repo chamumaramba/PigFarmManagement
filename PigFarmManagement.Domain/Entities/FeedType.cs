@@ -7,7 +7,7 @@ using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class FeedType:BaseEntity
+    public class FeedType:FarmEntity
     {
         public string Name { get; set; } = string.Empty;
         public FeedCategory Category { get; set; }

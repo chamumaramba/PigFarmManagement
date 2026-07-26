@@ -3,7 +3,7 @@ using PigFarmManagement.Domain.Common;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class AnimalMovement: BaseEntity
+    public class AnimalMovement: FarmEntity
     {
         public Guid AnimalId { get; set; }
         public Animal Animal { get; set; } = null!;

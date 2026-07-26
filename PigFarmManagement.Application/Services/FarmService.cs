@@ -12,9 +12,10 @@ using PigFarmManagement.Application.Mappings;
 
 namespace PigFarmManagement.Application.Services
 {
-    public class FarmService(IFarmRepository repo) : IFarmService
+    public class FarmService(IFarmRepository repo, ICurrentUserServices currentUserServices) : IFarmService
     {
         private readonly IFarmRepository _repo = repo;
+        //private readonly ICurrentUserServices _currentUserServices = currentUserServices;
         public async Task<FarmResponse> AddAsync(CreateFarmRequest request, CancellationToken cancellationToken)
         {
             if (await _repo.ExistsByNameAsync(request.Name, cancellationToken))
@@ -33,7 +34,8 @@ namespace PigFarmManagement.Application.Services
                 Location = request.Location,
                 Currency = request.Currency,
                 TimeZone = request.TimeZone,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = GetCurrentUserIdString()
             };
 
             await _repo.AddAsync(farm, cancellationToken);
@@ -55,6 +57,7 @@ namespace PigFarmManagement.Application.Services
             }
 
             farm.IsDeleted = true;
+            farm.UpdatedBy = GetCurrentUserIdString();
             _repo.Update(farm);
 
             await _repo.SaveChangesAsync(cancellationToken);
@@ -66,6 +69,7 @@ namespace PigFarmManagement.Application.Services
                 ?? throw new KeyNotFoundException("Farm not found.");
 
             farm.IsDeleted = false;
+            farm.UpdatedBy = GetCurrentUserIdString();
             _repo.Update(farm);
             await _repo.SaveChangesAsync(cancellationToken);
             return FarmMapper.ToResponse(farm);
@@ -104,6 +108,7 @@ namespace PigFarmManagement.Application.Services
             farm.Location = request.Location;
             farm.Currency = request.Currency;
             farm.TimeZone = request.TimeZone;
+            farm.UpdatedBy = GetCurrentUserIdString();
 
             _repo.Update(farm);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -111,7 +116,10 @@ namespace PigFarmManagement.Application.Services
             return FarmMapper.ToResponse(farm);
         }
 
-
+        private string GetCurrentUserIdString()
+        {
+            return currentUserServices.UserId.ToString();
+        }
 
     }
 }

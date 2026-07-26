@@ -7,7 +7,7 @@ using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Domain.Entities
 {
-    public class Animal: BaseEntity
+    public class Animal: FarmEntity
     {
         public string TagNumber { get; set; } = string.Empty;
         public DateTime DateOfBirth { get; set; }

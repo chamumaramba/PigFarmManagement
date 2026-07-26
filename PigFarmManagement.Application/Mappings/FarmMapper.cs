@@ -19,7 +19,7 @@ namespace PigFarmManagement.Application.Mappings
                 farm.Currency,
                 farm.TimeZone,
                 farm.CreatedAt,
-                farm.Building.Count,
+                farm.Buildings.Count,
                 farm.IsDeleted
             );
         }

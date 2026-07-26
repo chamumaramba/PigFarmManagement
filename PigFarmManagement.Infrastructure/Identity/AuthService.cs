@@ -14,25 +14,23 @@ using PigFarmManagement.Application.DTOs.Auth;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Infrastructure.Data;
-using PigFarmManagement.Application.Interfaces.Services;
+using PigFarmManagement.Application.Constants;
+using System.ComponentModel.DataAnnotations;
+using PigFarmManagement.Application.DTOs.Validators;
+using FluentValidation;
 
 namespace PigFarmManagement.Infrastructure.Identity
 {
-    public class AuthService : IAuthService
+    public class AuthService(
+        UserManager<ApplicationUser> userManager,
+        PigFarmDbContext pigFarmDbContext,
+        IConfiguration configuration,
+        IValidator<LoginRequest> loginValidator) : IAuthService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly PigFarmDbContext _pigFarmDbContext;
-        private readonly IConfiguration _configuration;
-
-        public AuthService(
-            UserManager<ApplicationUser> userManager,
-            PigFarmDbContext pigFarmDbContext,
-            IConfiguration configuration)
-        {
-            _userManager = userManager;
-            _pigFarmDbContext = pigFarmDbContext;
-            _configuration = configuration;
-        }
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly PigFarmDbContext _pigFarmDbContext = pigFarmDbContext;
+        private readonly IConfiguration _configuration = configuration;
+        //private readonly IValidator<LoginRequestValidator> _loginValidator = loginValidator;
 
         private async Task SaveRefreshTokenAsync(string userId, string refreshToken)
         {
@@ -48,6 +46,12 @@ namespace PigFarmManagement.Infrastructure.Identity
 
         public async Task<TokenResponse?> LoginAsync(LoginRequest request)
         {
+           var validationResult = await loginValidator.ValidateAsync(request);
+
+        if (!validationResult.IsValid)
+        {
+            throw new FluentValidation.ValidationException(validationResult.Errors);
+        }
             var normalizedEmail = request.Email?.Trim();
             var user = await _userManager.FindByEmailAsync(normalizedEmail);
             if (user == null && !string.IsNullOrWhiteSpace(normalizedEmail))
@@ -166,7 +170,9 @@ namespace PigFarmManagement.Infrastructure.Identity
                 new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
                 new(ClaimTypes.NameIdentifier, user.Id),
-                new(ClaimTypes.Name, user.UserName ?? string.Empty)
+                new(ClaimTypes.Name, user.UserName ?? string.Empty),
+                new Claim(CustomClaimTypes.FarmId, user.FarmId.ToString())
+
             };
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
