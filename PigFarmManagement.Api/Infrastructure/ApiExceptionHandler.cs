@@ -17,6 +17,7 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
         {
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
             InvalidOperationException => (StatusCodes.Status409Conflict, "Operation cannot be completed"),
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 

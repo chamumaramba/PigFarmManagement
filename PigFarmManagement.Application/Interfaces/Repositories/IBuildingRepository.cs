@@ -9,9 +9,9 @@ namespace PigFarmManagement.Application.Interfaces.Repositories
 {
     public interface IBuildingRepository: IRepository<Building>
     {
-        Task<IEnumerable<Building>> GetAllBuildingByFarmIdAsync(Guid farmId, CancellationToken cancellationToken);
-        Task<bool> BuildingNameExistsAsync(Guid farmId, string name, CancellationToken cancellationToken);
-        Task<Building?> GetBuildingByName(Guid farmId, string name, CancellationToken cancellationToken);
+        Task<IEnumerable<Building>> GetAllBuildingByFarmIdAsync(CancellationToken cancellationToken);
+        Task<bool> BuildingCodeExistsAsync(string name, CancellationToken cancellationToken);
+        Task<Building?> GetBuildingByName(string name, CancellationToken cancellationToken);
 
     }
 }

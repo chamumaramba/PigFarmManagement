@@ -34,20 +34,19 @@ namespace PigFarmManagement.Infrastructure.Identity
         {
             get
             {
-                var farmId = httpContextAccessor
+                var farmIdClaim = httpContextAccessor
                     .HttpContext?
                     .User?
                     .FindFirstValue(CustomClaimTypes.FarmId);
 
-                if (!Guid.TryParse(farmId, out var result))
+                if (!Guid.TryParse(farmIdClaim, out var farmId))
                 {
-                    throw new UnauthorizedAccessException("Invalid or missing FarmId in token.");
+                    throw new UnauthorizedAccessException(
+                        "Current user is not assigned to a farm.");
                 }
 
-                return result;
+                return farmId;
             }
         }
     }
-
-
 }

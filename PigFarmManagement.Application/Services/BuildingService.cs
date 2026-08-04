@@ -15,12 +15,12 @@ namespace PigFarmManagement.Application.Services
     public class BuildingService(
         IBuildingRepository repo,
         IFarmRepository farmRepo,
-        ICurrentUserServices userServices)
+        ICurrentUserServices currentUser)
         : IBuildingService
     {
         private readonly IBuildingRepository _repo = repo;
         private readonly IFarmRepository _farmRepo = farmRepo;
-        private readonly ICurrentUserServices _currentUserServices = userServices;
+        private readonly ICurrentUserServices _currentUser = currentUser;
         public async Task ActivateAsync(Guid id, CancellationToken cancellationToken)
         {
             //var farmId = _currentUserServices.FarmId;
@@ -37,18 +37,19 @@ namespace PigFarmManagement.Application.Services
 
         public async Task<BuildingResponse> AddAsync(CreateBuildingRequest buildingRequest, CancellationToken cancellationToken)
         {
-            var farmId = _currentUserServices.FarmId;
-            if (await _repo.BuildingNameExistsAsync(farmId, buildingRequest.Name, cancellationToken))
+            var farmId = _currentUser.FarmId;
+        if (await _repo.BuildingCodeExistsAsync(buildingRequest.BuildingCode, cancellationToken))
             {
-                throw new InvalidOperationException("Building with the same name already exists");
+                throw new InvalidOperationException("Building with the same code already exists");
             }
 
-            var farm = await _farmRepo.GetByIdAsync(
-                farmId,
-                cancellationToken)
-                ?? throw new KeyNotFoundException("Farm not found.");
+            var farm = await _farmRepo.GetByIdAsync(farmId, cancellationToken)
+                ?? throw new UnauthorizedAccessException(
+                    "User is not assigned to a farm.");
 
-            var buildingSequence = farm.Buildings.Count + 1;
+            var buildingSequence = farm.LastBuildingSequence + 1;
+            farm.LastBuildingSequence = buildingSequence;
+            _farmRepo.Update(farm);
 
             var buildingCode = BuildingCodeGenerator.Generate(
                 farm.FarmCode,
@@ -61,7 +62,7 @@ namespace PigFarmManagement.Application.Services
                 BuildingCode = buildingCode,
                 Status = buildingRequest.Status,
                 Type = buildingRequest.Type,
-                FarmId = farm.Id
+                FarmId = farmId
 
             };
 
@@ -82,9 +83,9 @@ namespace PigFarmManagement.Application.Services
 
         }
 
-        public async Task<IEnumerable<BuildingResponse>> GetAllAsync(Guid farmId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<BuildingResponse>> GetAllAsync(CancellationToken cancellationToken)
         {
-            var buildings = await _repo.GetAllBuildingByFarmIdAsync(farmId, cancellationToken);
+            var buildings = await _repo.GetAllAsync(cancellationToken);
             return BuildingMapper.ToResponseList(buildings);
         }
 
@@ -97,9 +98,9 @@ namespace PigFarmManagement.Application.Services
             return BuildingMapper.ToResponse(building);
         }
 
-        public async Task<BuildingResponse> GetByNameAsync(Guid farmId, string name, CancellationToken cancellationToken)
+        public async Task<BuildingResponse> GetByNameAsync(string name, CancellationToken cancellationToken)
         {
-            var building = await _repo.GetBuildingByName(farmId, name, cancellationToken)
+            var building = await _repo.GetBuildingByName(name, cancellationToken)
                 ?? throw new KeyNotFoundException($"Building '{name}' not found on the specified farm.");
 
             return BuildingMapper.ToResponse(building);

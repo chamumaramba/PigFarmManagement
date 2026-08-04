@@ -23,8 +23,8 @@ namespace PigFarmManagement.Api.Controller
         public async Task<IActionResult> Create(CreateFarmRequest request, CancellationToken cancellationToken)
         {
             var farm = await _farmService.AddAsync(request, cancellationToken);
-            return CreatedAtAction(
-                nameof(GetById),
+            return CreatedAtRoute(
+                "GetFarmById",
                 new { id = farm.Id },
                 ApiResponse<FarmResponse>.SuccessResponse(
                     farm,
@@ -33,7 +33,7 @@ namespace PigFarmManagement.Api.Controller
             );
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id:guid}", Name = "GetFarmById")]
         [Authorize(Roles = "Admin, FarmManager")]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
@@ -70,7 +70,7 @@ namespace PigFarmManagement.Api.Controller
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)
         {
             var farms = await _farmService.GetAllAsync(cancellationToken);
 

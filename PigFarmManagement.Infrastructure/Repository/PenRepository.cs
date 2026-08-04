@@ -10,8 +10,10 @@ using PigFarmManagement.Infrastructure.Data;
 
 namespace PigFarmManagement.Infrastructure.Repository
 {
-    public class PenRepository(PigFarmDbContext context, ICurrentUserServices currentUserServices)
-        : Repository<Pen>(context, currentUserServices), IPenRepository
+    public class PenRepository(
+        PigFarmDbContext context)
+        : Repository<Pen>(context),
+        IPenRepository
     {
         public async Task<bool> ExistsInBuildingAsync(Guid buildingId, string name, CancellationToken cancellationToken)
             => await _context.Pens
@@ -38,5 +40,10 @@ namespace PigFarmManagement.Infrastructure.Repository
         public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
             => await _context.Pens
             .AnyAsync(p => p.Name == name && !p.IsDeleted, cancellationToken);
+
+        public Task AddAnimalToPenAsync(Guid penId, Guid animalId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -15,6 +15,8 @@ namespace PigFarmManagement.Domain.Entities
         public decimal CurrentWeight { get; set; }
 
         public Gender Gender { get; set; }
+
+        public AnimalOrigin AnimalOrigin{ get; set; }
         public Breed Breed { get; set; }
 
         // Foreign key to the Sow entity (Parent)
@@ -28,6 +30,9 @@ namespace PigFarmManagement.Domain.Entities
         // Batch/litter
         public Guid? BatchId { get; set; }
         public Batch? Batch { get; set; }
+
+        public Guid FarmId { get; set; }
+        public Farm Farm { get; set;}
 
         // Status
         public AnimalStatus Status { get; set; }

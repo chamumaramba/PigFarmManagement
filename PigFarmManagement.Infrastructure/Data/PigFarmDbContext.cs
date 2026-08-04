@@ -31,6 +31,7 @@ namespace PigFarmManagement.Infrastructure.Data
         public DbSet<BreedingRecord> BreedingRecords { get; set; }
         public DbSet<AnimalMovement> AnimalMovements { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<HealthRecord> HealthRecords { get; set; }
 
         /// <summary>
         /// Returns the current user's FarmId, or Guid.Empty when no HTTP context
@@ -44,8 +45,7 @@ namespace PigFarmManagement.Infrastructure.Data
             {
                 try
                 {
-                    var farmId = _currentUserServices.FarmId;
-                    return farmId;
+                    return _currentUserServices.FarmId;
                 }
                 catch (UnauthorizedAccessException)
                 {

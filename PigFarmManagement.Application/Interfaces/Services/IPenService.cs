@@ -12,8 +12,9 @@ namespace PigFarmManagement.Application.Interfaces.Services
         Task<PenResponse> AddAsync(CreatePenRequest request, CancellationToken cancellationToken);
 
         Task<PenResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-
+        Task AddAnimalToPenAsync(Guid animalId, Guid penId, CancellationToken cancellationToken);
         Task<IEnumerable<PenSummaryResponse>> GetAllAsync(CancellationToken cancellationToken);
+        // Task MoveAnimalAsync(Guid animalId, Guid fromPenId, Guid ToPenId, CancellationToken cancellationToken);
 
         Task<IEnumerable<PenSummaryResponse>> GetByBuildingAsync(Guid buildingId, CancellationToken cancellationToken);
 
