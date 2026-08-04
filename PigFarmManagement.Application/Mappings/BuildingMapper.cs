@@ -14,6 +14,7 @@ namespace PigFarmManagement.Application.Mappings
             return new BuildingResponse(
                 building.Id,
                 building.Name,
+                building.BuildingCode,
                 building.Type,
                 building.FarmId,
                 building.Status,

@@ -14,5 +14,6 @@ namespace PigFarmManagement.Application.Interfaces.Repositories
         Task<IEnumerable<Pen>> GetByBuildingAsync(Guid buildingId, CancellationToken cancellationToken);
         Task<int> GetCountAsync(Guid buildingId, CancellationToken cancellationToken);
         Task<bool> ExistsInBuildingAsync(Guid buildingId, string name, CancellationToken cancellationToken);
+        Task AddAnimalToPenAsync(Guid penId, Guid animalId, CancellationToken cancellationToken);
     }
 }

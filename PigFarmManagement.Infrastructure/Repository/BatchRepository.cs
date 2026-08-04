@@ -1,21 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using PigFarmManagement.Application.Interfaces.Repositories;
-using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Domain.Enums;
 using PigFarmManagement.Infrastructure.Data;
 
 namespace PigFarmManagement.Infrastructure.Repository
 {
-    public class BatchRepository(
-        PigFarmDbContext context,
-        ICurrentUserServices currentUser)
-        : Repository<Batch>(context, currentUser),
-        IBatchRepository
+    public class BatchRepository(PigFarmDbContext context)
+        : Repository<Batch>(context), IBatchRepository
     {
         /// <summary>
         /// Returns the count of batches for the current farm.
-        /// FarmId scoping is handled automatically by the DbContext global query filter.
+        /// FarmId scoping and soft delete are handled automatically by DbContext global query filter.
         /// </summary>
         public async Task<int> GetBatchCountAsync(CancellationToken cancellationToken)
         {

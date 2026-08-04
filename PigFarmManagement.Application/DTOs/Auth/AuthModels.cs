@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using PigFarmManagement.Domain.Enums;
 
 namespace PigFarmManagement.Application.DTOs.Auth
 {
@@ -12,10 +13,11 @@ namespace PigFarmManagement.Application.DTOs.Auth
     public record RegisterRequest(
         string FirstName,
         string LastName,
+        Guid? FarmId,
         string Email,
         string Password,
         string ConfirmPassword,
-        string? Position,
+        EmployeePosition Position,
         string? EmployeeId
     );
 

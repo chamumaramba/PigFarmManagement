@@ -12,6 +12,7 @@ namespace PigFarmManagement.Application.DTOs.Building
             string Name,
             BuildingType Type,
             BuildingStatus Status,
+            string BuildingCode,
             int NumberOfPens
         );
 
@@ -24,6 +25,7 @@ namespace PigFarmManagement.Application.DTOs.Building
         public record BuildingResponse(
             Guid Id,
             string Name,
+            string BuildingCode,
             BuildingType Type,
             Guid FarmId,
             BuildingStatus Status,

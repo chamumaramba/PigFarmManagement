@@ -6,8 +6,10 @@ using PigFarmManagement.Infrastructure.Data;
 
 namespace PigFarmManagement.Infrastructure.Repository
 {
-    public class AnimalRepository(PigFarmDbContext context, ICurrentUserServices currentUserServices)
-        : Repository<Animal>(context, currentUserServices), IAnimalRepository
+    public class AnimalRepository(
+        PigFarmDbContext context)
+        : Repository<Animal>(context),
+        IAnimalRepository
     {
         //private readonly PigFarmDbContext _context = context;
 

@@ -10,5 +10,6 @@ namespace PigFarmManagement.Application.Interfaces.Repositories
     public interface IAnimalRepository: IRepository<Animal>
     {
         Task<Animal?> GetByTagNumberAsync(string tagNumber, CancellationToken cancellationToken = default);
+
     }
 }

@@ -24,7 +24,8 @@ namespace PigFarmManagement.Infrastructure.Identity
 
         public static async Task SeedDevelopmentAdminAsync(
             UserManager<ApplicationUser> userManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            PigFarmManagement.Infrastructure.Data.PigFarmDbContext db)
         {
             var adminEmail = (configuration["DevelopmentSeed:AdminEmail"]
                 ?? "admin@pigfarm.local").Trim();
@@ -57,9 +58,35 @@ namespace PigFarmManagement.Infrastructure.Identity
                         AppRoles.Admin);
                 }
 
+                // Ensure a farm exists and assign it to the admin
+                var farm = db.Farms.FirstOrDefault();
+                if (farm == null)
+                {
+                    farm = new PigFarmManagement.Domain.Entities.Farm
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = configuration["DevelopmentSeed:FarmName"] ?? "Demo Farm",
+                        FarmCode = configuration["DevelopmentSeed:FarmCode"] ?? "DF-001",
+                        Location = configuration["DevelopmentSeed:FarmLocation"] ?? "Local",
+                        Currency = configuration["DevelopmentSeed:FarmCurrency"] ?? "USD",
+                        TimeZone = configuration["DevelopmentSeed:FarmTimeZone"] ?? "UTC",
+                        LastAnimalSequence = 0,
+                        LastBuildingSequence = 0
+                    };
+
+                    db.Farms.Add(farm);
+                    await db.SaveChangesAsync();
+                }
+
+                admin.FarmId = farm.Id;
+                await userManager.UpdateAsync(admin);
+
                 return;
             }
 
+
+            // User already exists
+            // Do not reset password here
 
             // User already exists
             // Do not reset password here
@@ -69,6 +96,59 @@ namespace PigFarmManagement.Infrastructure.Identity
                 await userManager.AddToRoleAsync(
                     admin,
                     AppRoles.Admin);
+            }
+
+            // Ensure the existing user has a farm assigned
+            if (!admin.FarmId.HasValue)
+            {
+                var farm = db.Farms.FirstOrDefault();
+                if (farm == null)
+                {
+                    farm = new PigFarmManagement.Domain.Entities.Farm
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = configuration["DevelopmentSeed:FarmName"] ?? "Demo Farm",
+                        FarmCode = configuration["DevelopmentSeed:FarmCode"] ?? "DF-001",
+                        Location = configuration["DevelopmentSeed:FarmLocation"] ?? "Local",
+                        Currency = configuration["DevelopmentSeed:FarmCurrency"] ?? "USD",
+                        TimeZone = configuration["DevelopmentSeed:FarmTimeZone"] ?? "UTC",
+                        LastAnimalSequence = 0,
+                        LastBuildingSequence = 0
+                    };
+
+                    db.Farms.Add(farm);
+                    await db.SaveChangesAsync();
+                }
+
+                admin.FarmId = farm.Id;
+                await userManager.UpdateAsync(admin);
+            }
+
+            // Ensure a development farm exists and assign it to any users missing FarmId
+            var devFarm = db.Farms.FirstOrDefault();
+            if (devFarm == null)
+            {
+                devFarm = new PigFarmManagement.Domain.Entities.Farm
+                {
+                    Id = Guid.NewGuid(),
+                    Name = configuration["DevelopmentSeed:FarmName"] ?? "Demo Farm",
+                    FarmCode = configuration["DevelopmentSeed:FarmCode"] ?? "DF-001",
+                    Location = configuration["DevelopmentSeed:FarmLocation"] ?? "Local",
+                    Currency = configuration["DevelopmentSeed:FarmCurrency"] ?? "USD",
+                    TimeZone = configuration["DevelopmentSeed:FarmTimeZone"] ?? "UTC",
+                    LastAnimalSequence = 0,
+                    LastBuildingSequence = 0
+                };
+
+                db.Farms.Add(devFarm);
+                await db.SaveChangesAsync();
+            }
+
+            var usersWithoutFarm = userManager.Users.Where(u => !u.FarmId.HasValue).ToList();
+            foreach (var u in usersWithoutFarm)
+            {
+                u.FarmId = devFarm.Id;
+                await userManager.UpdateAsync(u);
             }
         }
     }

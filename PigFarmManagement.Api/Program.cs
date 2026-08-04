@@ -76,8 +76,17 @@ builder.Services.AddScoped<IBatchService, BatchService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFarmService, FarmService>();
 builder.Services.AddScoped<IFarmRepository, FarmRepository>();
+builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
+builder.Services.AddScoped<IBuildingService, BuildingService>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+// Diagnostic: verify IBuildingService registration
+{
+    var diagnosticProvider = builder.Services.BuildServiceProvider();
+    var svc = diagnosticProvider.GetService<IBuildingService>();
+    Console.WriteLine($"[DI DIAGNOSTIC] IBuildingService registered: {(svc != null)}");
+}
 
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT signing key is not configured. Set Jwt__Key outside source control.");

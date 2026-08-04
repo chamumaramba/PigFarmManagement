@@ -22,8 +22,10 @@ namespace PigFarmManagement.Infrastructure.Extensions
             var userManager = scope.ServiceProvider
             .GetRequiredService<UserManager<ApplicationUser>>();
 
+            var db = scope.ServiceProvider.GetRequiredService<PigFarmManagement.Infrastructure.Data.PigFarmDbContext>();
+
             await IdentitySeeder.SeedRoleAsync(roleManager);
-            await IdentitySeeder.SeedDevelopmentAdminAsync(userManager, configuration);
+            await IdentitySeeder.SeedDevelopmentAdminAsync(userManager, configuration, db);
 
         }
     }

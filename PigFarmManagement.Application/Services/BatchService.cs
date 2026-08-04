@@ -56,9 +56,10 @@ namespace PigFarmManagement.Application.Services
         public async Task<BatchResponse> AddBatchAsync(CreateBatchRequest request, CancellationToken cancellationToken)
         {
             var farmId = _currentUser.FarmId;
-            var farm = await _farmRepository.GetByIdAsync(farmId, cancellationToken);
+            var farm = await _farmRepository.GetByIdAsync(farmId, cancellationToken)
+                ?? throw new InvalidOperationException("Farm not found.");
             var count = await _batchRepo.GetBatchCountAsync(cancellationToken);
-            var batchCode = BatchCodeGenerator.Generate(farm.FarmCode, request.StartDate, count + 1 );
+            var batchCode = BatchCodeGenerator.Generate(farm.FarmCode, request.StartDate, count + 1);
 
             var batch = new Batch
             {

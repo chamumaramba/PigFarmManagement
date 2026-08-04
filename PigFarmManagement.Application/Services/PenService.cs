@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using PigFarmManagement.Application.DTOs.Pen;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Application.Mappings;
@@ -27,6 +22,11 @@ namespace PigFarmManagement.Application.Services
 
             _repo.Update(existingPen);
             await _repo.SaveChangesAsync();
+        }
+
+        public Task AddAnimalToPenAsync(Guid animalId, Guid penId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<PenResponse> AddAsync(CreatePenRequest request, CancellationToken cancellationToken)
@@ -88,12 +88,15 @@ namespace PigFarmManagement.Application.Services
             return PenMapper.ToResponse(pen);
         }
 
+       /*  public Task MoveAnimalAsync(Guid animalId, Guid fromPenId, Guid ToPenId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        } */
+
         public async Task<PenResponse> Update(Guid id, UpdatePenRequest request, CancellationToken cancellationToken)
         {
 
-            var pen = await _repo.GetByIdAsync(id, cancellationToken);
-            if (pen == null)
-                throw new KeyNotFoundException("Pen not found.");
+            var pen = await _repo.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException("Pen not found.");
 
             if (!string.Equals(pen.Name, request.Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -106,6 +109,7 @@ namespace PigFarmManagement.Application.Services
                     throw new InvalidOperationException(
                         "A pen with the same name already exists in this building.");
             }
+
             pen.Name = request.Name;
             pen.Capacity = request.Capacity;
             pen.Type = request.PenType;
