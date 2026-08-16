@@ -19,30 +19,14 @@ namespace PigFarmManagement.Api.Controller
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(
-                    ApiResponse<object?>.ErrorResponse(
-                        null,
-                        "Invalid request."
-                    ));
-            }
-            var user = await _authService.LoginAsync(request);
+            var tokens = await _authService.LoginAsync(request);
+            if (tokens is null)
+                return Unauthorized();
 
-             if (user == null)
-            {
-                return Unauthorized(
-                    ApiResponse<object?>.ErrorResponse(
-                        null,
-                        "Invalid email or password."
-                    ));
-            }
+            Response.Cookies.Append("pf_access", tokens.AccessToken, AccessCookieOptions(tokens.ExpiresAt));
+            Response.Cookies.Append("pf_refresh", tokens.RefreshToken, RefreshCookieOptions());
 
-            return Ok(
-                ApiResponse<TokenResponse>.SuccessResponse(
-                    user,
-                    "Login successful."
-            ));
+            return Ok(ApiResponse<object?>.SuccessResponse(null, "Login successful."));
         }
 
         [HttpPost("register")]
@@ -63,8 +47,18 @@ namespace PigFarmManagement.Api.Controller
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
         {
-            var token = await _authService.RefreshTokenAsync(request);
-            return token is null ? Unauthorized() : Ok(token);
+            var refreshToken = Request.Cookies["pf_refresh"];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return Unauthorized();
+
+            var tokens = await _authService.RefreshTokenAsync(refreshToken);
+            if (tokens is null)
+                return Unauthorized();
+
+            Response.Cookies.Append("pf_access", tokens.AccessToken, AccessCookieOptions(tokens.ExpiresAt));
+            Response.Cookies.Append("pf_refresh", tokens.RefreshToken, RefreshCookieOptions());
+
+            return NoContent();
         }
 
         [HttpPost("revoke")]
@@ -95,5 +89,36 @@ namespace PigFarmManagement.Api.Controller
                 )
             );
         }
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var refreshToken = Request.Cookies["pf_access"];
+
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+                await _authService.RevokeTokenAsync(refreshToken);
+
+            Response.Cookies.Delete("pf_access", new CookieOptions { Path = "/"});
+            Response.Cookies.Delete("pf_refresh", new CookieOptions { Path = "/api/auth" });
+
+            return NoContent();
+        }
+
+        private static CookieOptions AccessCookieOptions(DateTime expiresAt) => new()
+        {
+            HttpOnly = true,
+            Secure = true, // HTTPS only; use false only for local HTTP development
+            SameSite = SameSiteMode.Lax,
+            Expires = new DateTimeOffset(expiresAt),
+            Path = "/"
+        };
+
+        private static CookieOptions RefreshCookieOptions() => new()
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(7),
+            Path = "/api/auth"
+        };
     }
 }

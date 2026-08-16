@@ -132,70 +132,11 @@ builder.Services.AddAuthentication(options =>
         {
             OnMessageReceived = context =>
             {
-                var authorization = context.Request.Headers.Authorization.ToString();
-                Console.WriteLine($"[OnMessageReceived] Auth header: {(string.IsNullOrEmpty(authorization) ? "EMPTY" : authorization)}");
-
-                if (string.IsNullOrWhiteSpace(authorization))
-                {
-                    Console.WriteLine("[OnMessageReceived] Authorization header is empty");
-                    return Task.CompletedTask;
-                }
-
-                var token = authorization.Trim();
-
-                // Remove Bearer prefix if present
-                if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                {
-                    token = token["Bearer ".Length..].Trim();
-                }
-
-                // Remove quotes if present
-                if (token.StartsWith('"') && token.EndsWith('"') && token.Length >= 2)
-                {
-                    token = token[1..^1];
-                }
-
-                if (!string.IsNullOrWhiteSpace(token))
-                {
-                    context.Token = token;
-                    Console.WriteLine($"[OnMessageReceived] Token extracted successfully (length: {token.Length})");
-                }
-                else
-                {
-                    Console.WriteLine("[OnMessageReceived] Token is empty after processing");
-                }
-
-                return Task.CompletedTask;
-            },
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"[OnAuthenticationFailed] JWT auth failed: {context.Exception?.Message}");
-                Console.WriteLine($"[OnAuthenticationFailed] Exception type: {context.Exception?.GetType().Name}");
-                if (context.Exception is Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException)
-                {
-                    Console.WriteLine("[OnAuthenticationFailed] Token is expired");
-                }
-                return Task.CompletedTask;
-            },
-            OnChallenge = context =>
-            {
-                Console.WriteLine($"[OnChallenge] Challenge issued. Error: {context.Error}, ErrorDescription: {context.ErrorDescription}");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine("[OnTokenValidated] JWT token validated successfully!");
-                var principal = context.Principal;
-                if (principal != null)
-                {
-                    foreach (var claim in principal.Claims)
-                    {
-                        Console.WriteLine($"  - Claim: {claim.Type} = {claim.Value}");
-                    }
-                }
+                context.Token = context.Request.Cookies["pf_access"];
                 return Task.CompletedTask;
             }
         };
+
     });
 
 builder.Services.AddAuthorization();
