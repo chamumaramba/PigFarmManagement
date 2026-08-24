@@ -12,7 +12,10 @@ namespace PigFarmManagement.Domain.Entities
         public string BuildingCode { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public int NumberOfPens { get; set; }
-        public BuildingType Type { get; set; }
+        public int LastPenSequence { get; set; }
+
+        public int DefaultPenCapacity { get; set; }
+        public PenType DefaultPenType { get; set; }
         public BuildingStatus Status {get; set; }
         public ICollection<Pen> Pens { get; set; } = new List<Pen>();
     }

@@ -4,6 +4,7 @@ using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Application.Mappings;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Domain.Enums;
+using static PigFarmManagement.Application.DTOs.AnimalModels;
 using static PigFarmManagement.Application.DTOs.Batch.BatchModels;
 
 namespace PigFarmManagement.Application.Services
@@ -26,7 +27,6 @@ namespace PigFarmManagement.Application.Services
             if (batch == null)
                 throw new KeyNotFoundException("Batch does not exist.");
 
-            batch.IsDeleted = false;
             batch.Status = BatchStatus.Active;
             batch.UpdatedAt = DateTime.UtcNow;
             _batchRepo.Update(batch, cancellationToken);
@@ -59,7 +59,7 @@ namespace PigFarmManagement.Application.Services
             var farm = await _farmRepository.GetByIdAsync(farmId, cancellationToken)
                 ?? throw new InvalidOperationException("Farm not found.");
             var count = await _batchRepo.GetBatchCountAsync(cancellationToken);
-            var batchCode = BatchCodeGenerator.Generate(farm.FarmCode, request.StartDate, count + 1);
+            var batchCode = CodeGenerator.Batch(farm.FarmCode, request.StartDate, count + 1);
 
             var batch = new Batch
             {
@@ -67,12 +67,54 @@ namespace PigFarmManagement.Application.Services
                 Status = request.Status,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-
+                BatchSize = request.BatchSize,
+                FarmId = farmId,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = _currentUser.UserId.ToString()
             };
 
-            await _batchRepo.AddAsync(batch);
+            await _batchRepo.AddAsync(batch, cancellationToken);
+            for(int i = 0; i < request.BatchSize; i++)
+            {
+                farm.LastAnimalSequence++;
+                var animal = CreateAnimalForBatch(request, batch, farm, farmId);
+                await _animalRepo.AddAsync(animal, cancellationToken);
+            }
+
+            _farmRepository.Update(farm, cancellationToken);
             await _batchRepo.SaveChangesAsync(cancellationToken);
             return BatchMapper.ToResponse(batch);
+        }
+
+        private Animal CreateAnimalForBatch(
+            CreateBatchRequest request,
+            Batch batch,
+            Farm farm,
+            Guid farmId)
+        {
+            var tagNumber = TagNumberGenerator.Generate(
+                farm.FarmCode,
+                request.DateOfBirth,
+                farm.LastAnimalSequence);
+
+            return new Animal
+            {
+                TagNumber = tagNumber,
+                DateOfBirth = request.DateOfBirth,
+                BirthWeight = null,
+                CurrentWeight = null,
+                Gender = null,
+                Breed = null,
+                SowId = null,
+                BoarId = null,
+                BatchId = batch.Id,
+                Status = AnimalStatus.Alive,
+                ProductionStage = PigLifecycleCalculator.Calculate(request.DateOfBirth),
+                Notes = null,
+                FarmId = farmId,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = _currentUser.UserId.ToString()
+            };
         }
 
         public async Task CloseBatchAsync(Guid batchId, CancellationToken cancellationToken)
@@ -83,7 +125,8 @@ namespace PigFarmManagement.Application.Services
 
             batch.Status = BatchStatus.Archived;
             batch.IsDeleted = true;
-            _batchRepo.Update(batch);
+            batch.UpdatedAt = DateTime.UtcNow;
+            _batchRepo.Update(batch, cancellationToken);
             await _batchRepo.SaveChangesAsync(cancellationToken);
         }
 
@@ -93,9 +136,9 @@ namespace PigFarmManagement.Application.Services
             if (batch == null)
                throw new KeyNotFoundException("Batch not found.");
 
-            batch.Status = BatchStatus.Active;
-            batch.IsDeleted = true;
-            _batchRepo.Update(batch);
+            batch.Status = BatchStatus.Inactive;
+            batch.UpdatedAt = DateTime.UtcNow;
+            _batchRepo.Update(batch, cancellationToken);
             await _batchRepo.SaveChangesAsync(cancellationToken);
         }
 
@@ -112,7 +155,7 @@ namespace PigFarmManagement.Application.Services
             if (batch is null)
             {
                 throw new KeyNotFoundException(
-                    $"Batch with code '{batchId}' was not found."
+                    $"Batch with ID '{batchId}' was not found."
                 );
             }
             return BatchMapper.ToResponse(batch);

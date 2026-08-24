@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PigFarmManagement.Infrastructure.Data;
 using PigFarmManagement.Infrastructure.Identity;
 
 namespace PigFarmManagement.Infrastructure.Extensions
@@ -22,11 +23,10 @@ namespace PigFarmManagement.Infrastructure.Extensions
             var userManager = scope.ServiceProvider
             .GetRequiredService<UserManager<ApplicationUser>>();
 
-            var db = scope.ServiceProvider.GetRequiredService<PigFarmManagement.Infrastructure.Data.PigFarmDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<PigFarmDbContext>();
 
             await IdentitySeeder.SeedRoleAsync(roleManager);
             await IdentitySeeder.SeedDevelopmentAdminAsync(userManager, configuration, db);
-
         }
     }
 }

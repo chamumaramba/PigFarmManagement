@@ -44,10 +44,10 @@ namespace PigFarmManagement.Application.DTOs
             Guid Id,
             string TagNumber,
             DateTime DateOfBirth,
-            decimal BirthWeight,
-            decimal CurrentWeight,
-            Gender Gender,
-            Breed Breed,
+            decimal? BirthWeight,
+            decimal? CurrentWeight,
+            Gender? Gender,
+            Breed? Breed,
             Guid? SowId,
             Guid? BoarId,
             Guid? BatchId,
@@ -61,11 +61,11 @@ namespace PigFarmManagement.Application.DTOs
         public record AnimalSummary(
             Guid Id,
             string TagNumber,
-            Gender Gender,
-            Breed Breed,
+            Gender? Gender,
+            Breed? Breed,
             AnimalStatus Status,
             ProductionStage ProductionStage,
-            decimal CurrentWeight
+            decimal? CurrentWeight
         );
     }
 }

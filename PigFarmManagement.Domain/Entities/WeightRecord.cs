@@ -9,7 +9,7 @@ namespace PigFarmManagement.Domain.Entities
     public class WeightRecord:FarmEntity
     {
         public Guid BatchId { get; set; }
-        public Batch Batch { get; set; }
+        public Batch Batch { get; set; } = null!;
         public DateTime RecordDate { get; set; }
         public decimal AverageWeightKg { get; set; }
         public decimal TotalWeightKg { get; set; }

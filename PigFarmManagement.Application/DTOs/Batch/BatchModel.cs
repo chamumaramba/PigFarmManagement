@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using global::PigFarmManagement.Domain.Enums;
+using static PigFarmManagement.Application.DTOs.AnimalModels;
 
 namespace PigFarmManagement.Application.DTOs.Batch
 {
@@ -12,7 +14,9 @@ namespace PigFarmManagement.Application.DTOs.Batch
             string BatchCode,
             DateTime StartDate,
             DateTime EndDate,
-            BatchStatus Status
+            BatchStatus Status,
+            DateTime DateOfBirth,
+            int BatchSize
         );
 
         public record UpdateBatchRequest(

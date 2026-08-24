@@ -1,3 +1,4 @@
+using PigFarmManagement.Application.Helpers;
 using PigFarmManagement.Application.Interfaces.Repositories;
 using PigFarmManagement.Application.Interfaces.Services;
 using PigFarmManagement.Application.Mappings;
@@ -29,8 +30,10 @@ namespace PigFarmManagement.Application.Services
             throw new NotImplementedException();
         }
 
-        public async Task<PenResponse> AddAsync(CreatePenRequest request, CancellationToken cancellationToken)
+       /*  public async Task<PenResponse> AddAsync(CreatePenRequest request, CancellationToken cancellationToken)
         {
+            var building = await _repo.B
+            var penCode = CodeGenerator.Pen(request.Name)
             var pen = new Pen
             {
                 Id = Guid.NewGuid(),
@@ -46,7 +49,7 @@ namespace PigFarmManagement.Application.Services
             await _repo.SaveChangesAsync();
 
             return PenMapper.ToResponse(pen);
-        }
+        } */
 
         public async Task DeactivateAsync(Guid id, CancellationToken cancellationToken)
         {

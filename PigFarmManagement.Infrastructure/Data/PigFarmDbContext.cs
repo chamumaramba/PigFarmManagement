@@ -77,10 +77,38 @@ namespace PigFarmManagement.Infrastructure.Data
                     .HasForeignKey(a => a.BatchId)
                     .OnDelete(DeleteBehavior.SetNull);
 
+                // BreedingRecords where this animal is the main subject
                 entity.HasMany(a => a.BreedingRecords)
                     .WithOne(b => b.Animal)
-                    .HasForeignKey(b => b.AnimalId);
+                    .HasForeignKey(b => b.AnimalId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
+
+            // ── BreedingRecord relationship configuration ──────────────────────
+            modelBuilder.Entity<FarrowingRecord>()
+                .HasOne(f => f.Litter)
+                .WithOne(l => l.FarrowingRecord)
+                .HasForeignKey<Litter>(l => l.FarrowingRecordId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BreedingRecord>(entity =>
+            {
+                entity.HasOne(b => b.Sow)
+                    .WithMany()
+                    .HasForeignKey(b => b.SowId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(b => b.Boar)
+                    .WithMany()
+                    .HasForeignKey(b => b.BoarId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Building>()
+                .HasMany(building => building.Pens)
+                .WithOne(pen => pen.Building)
+                .HasForeignKey(pen => pen.BuildingId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // ── Automatic query filters for all FarmEntity subclasses ────────
             // Applies:  WHERE FarmId = @CurrentFarmId AND IsDeleted = 0
