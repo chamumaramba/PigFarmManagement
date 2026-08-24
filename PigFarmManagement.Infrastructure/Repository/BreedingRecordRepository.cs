@@ -19,7 +19,7 @@ namespace PigFarmManagement.Infrastructure.Repository
         // private readonly ICurrentUserServices _currentUser = currentUser;
         public async Task<IReadOnlyList<BreedingRecord>> GetByAnimalAsync(Guid animalId, CancellationToken cancellationToken = default)
             => await _context.BreedingRecords
-                .Where(br => br.AnimalId == animalId && !br.IsDeleted)
+                .Where(br => (br.SowId == animalId || br.BoarId == animalId) && !br.IsDeleted)
                 .ToListAsync(cancellationToken);
         public async Task<IReadOnlyList<BreedingRecord>> GetByBoarAsync(Guid boarId, CancellationToken cancellationToken = default)
             => await _context.BreedingRecords

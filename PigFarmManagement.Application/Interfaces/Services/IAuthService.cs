@@ -10,7 +10,7 @@ namespace PigFarmManagement.Application.Interfaces.Services
     public interface IAuthService
     {
         Task<TokenResponse?> LoginAsync(LoginRequest request);
-        Task<TokenResponse?> RefreshTokenAsync(RefreshTokenRequest request);
+        Task<TokenResponse?> RefreshTokenAsync(string refreshToken);
         Task<bool> RevokeTokenAsync(string token);
         Task<RegisterResponse> RegisterAsync(RegisterRequest request);
         Task<ChangePasswordResponse> ChangePasswordAsync(string username, string currentPassword, string newPassword);

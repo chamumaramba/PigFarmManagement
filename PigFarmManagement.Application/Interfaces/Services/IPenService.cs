@@ -9,7 +9,7 @@ namespace PigFarmManagement.Application.Interfaces.Services
 {
     public interface IPenService
     {
-        Task<PenResponse> AddAsync(CreatePenRequest request, CancellationToken cancellationToken);
+        // Task<PenResponse> AddAsync(CreatePenRequest request, CancellationToken cancellationToken);
 
         Task<PenResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
         Task AddAnimalToPenAsync(Guid animalId, Guid penId, CancellationToken cancellationToken);

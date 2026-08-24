@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using PigFarmManagement.Domain.Enums;
@@ -9,16 +10,28 @@ namespace PigFarmManagement.Application.DTOs.Building
    public static class BuildingModels
     {
         public record CreateBuildingRequest(
+            [Required]
+            [StringLength(100, MinimumLength = 2)]
             string Name,
-            BuildingType Type,
+
             BuildingStatus Status,
-            string BuildingCode,
-            int NumberOfPens
+
+            [Required]
+            int DefaultPenType,
+
+            [Required]
+            [MinLength(1)]
+            IReadOnlyList<CreatePenGroupRequest> PenGroups
+        );
+
+        public record CreatePenGroupRequest(
+            PenType PenType,
+            int NumberOfPens,
+            int CapacityPerPen
         );
 
         public record UpdateBuildingRequest(
             string Name,
-            BuildingType Type,
             BuildingStatus Status
         );
 
@@ -26,7 +39,6 @@ namespace PigFarmManagement.Application.DTOs.Building
             Guid Id,
             string Name,
             string BuildingCode,
-            BuildingType Type,
             Guid FarmId,
             BuildingStatus Status,
             int PenCount,
@@ -37,7 +49,6 @@ namespace PigFarmManagement.Application.DTOs.Building
         public record BuildingSummaryResponse(
             Guid Id,
             string Name,
-            BuildingType Type,
             BuildingStatus Status
         );
     }

@@ -15,7 +15,6 @@ namespace PigFarmManagement.Application.Mappings
                 building.Id,
                 building.Name,
                 building.BuildingCode,
-                building.Type,
                 building.FarmId,
                 building.Status,
                 building.Pens.Count,

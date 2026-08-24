@@ -51,7 +51,7 @@ namespace PigFarmManagement.Application.Services
 
             farm.LastAnimalSequence++;
 
-            var tagNumber = TagNumberGenerator.Generate(
+            var tagNumber = CodeGenerator.AnimalTag(
                 farm.FarmCode,
                 createAnimalRequest.DateOfBirth,
                 farm.LastAnimalSequence);
@@ -64,8 +64,6 @@ namespace PigFarmManagement.Application.Services
                 CurrentWeight = createAnimalRequest.BirthWeight,
                 Gender = createAnimalRequest.Gender,
                 Breed = createAnimalRequest.Breed,
-                SowId = createAnimalRequest.SowId,
-                BoarId = createAnimalRequest.BoarId,
                 BatchId = createAnimalRequest.BatchId,
                 Status = AnimalStatus.Alive,
                 ProductionStage = PigLifecycleCalculator.Calculate(createAnimalRequest.DateOfBirth),
@@ -94,8 +92,6 @@ namespace PigFarmManagement.Application.Services
             animal.CurrentWeight = request.CurrentWeight;
             animal.Gender = request.Gender;
             animal.Breed = request.Breed;
-            animal.SowId = request.SowId;
-            animal.BoarId = request.BoarId;
             animal.BatchId = request.BatchId;
             animal.Status = request.Status;
             animal.ProductionStage = request.ProductionStage;

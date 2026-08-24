@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PigFarmManagement.Domain.Entities;
 using PigFarmManagement.Domain.Enums;
+using static PigFarmManagement.Application.DTOs.AnimalModels;
 using static PigFarmManagement.Application.DTOs.Batch.BatchModels;
 
 namespace PigFarmManagement.Application.Interfaces.Services

@@ -82,10 +82,10 @@ namespace PigFarmManagement.Infrastructure.Identity
             return new TokenResponse(accessToken, refreshToken, expiresAt);
         }
 
-        public async Task<TokenResponse?> RefreshTokenAsync(RefreshTokenRequest request)
+        public async Task<TokenResponse?> RefreshTokenAsync(string refreshToken)
         {
             var storedToken = await _pigFarmDbContext.RefreshTokens
-                .SingleOrDefaultAsync(token => token.Token == HashToken(request.RefreshToken));
+                .SingleOrDefaultAsync(token => token.Token == HashToken(refreshToken));
 
             if (storedToken is null || !storedToken.IsActive)
             {
@@ -203,6 +203,7 @@ namespace PigFarmManagement.Infrastructure.Identity
         {
             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
         }
+
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
         {
             var jwtKey = _configuration["Jwt:Key"]
@@ -255,13 +256,6 @@ namespace PigFarmManagement.Infrastructure.Identity
                 securityKey,
                 SecurityAlgorithms.HmacSha256
             );
-
-
-            var keyHash = Convert.ToBase64String(
-                SHA256.HashData(Encoding.UTF8.GetBytes(jwtKey))
-            );
-
-            Console.WriteLine($"[TOKEN GENERATION] JWT Key Hash: {keyHash}");
 
 
             var token = new JwtSecurityToken(

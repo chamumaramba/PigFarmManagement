@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using PigFarmManagement.Application.DTOs.Building;
 using PigFarmManagement.Application.Helpers;
@@ -38,10 +39,6 @@ namespace PigFarmManagement.Application.Services
         public async Task<BuildingResponse> AddAsync(CreateBuildingRequest buildingRequest, CancellationToken cancellationToken)
         {
             var farmId = _currentUser.FarmId;
-        if (await _repo.BuildingCodeExistsAsync(buildingRequest.BuildingCode, cancellationToken))
-            {
-                throw new InvalidOperationException("Building with the same code already exists");
-            }
 
             var farm = await _farmRepo.GetByIdAsync(farmId, cancellationToken)
                 ?? throw new UnauthorizedAccessException(
@@ -51,20 +48,60 @@ namespace PigFarmManagement.Application.Services
             farm.LastBuildingSequence = buildingSequence;
             _farmRepo.Update(farm);
 
-            var buildingCode = BuildingCodeGenerator.Generate(
+            var buildingCode = CodeGenerator.Building(
                 farm.FarmCode,
                 buildingSequence);
+
+            if (await _repo.BuildingCodeExistsAsync(buildingCode, cancellationToken))
+            {
+                throw new InvalidOperationException("Building with the same code already exists");
+            }
+
+            var firstPenGroup = buildingRequest.PenGroups.FirstOrDefault()
+                ?? throw new ArgumentException("At least one pen group is required.", nameof(buildingRequest));
 
             var building = new Building
             {
                 Id = Guid.NewGuid(),
                 Name = buildingRequest.Name,
                 BuildingCode = buildingCode,
+                DefaultPenCapacity = firstPenGroup.CapacityPerPen,
+                DefaultPenType = firstPenGroup.PenType,
                 Status = buildingRequest.Status,
-                Type = buildingRequest.Type,
                 FarmId = farmId
 
             };
+
+            foreach (var group in buildingRequest.PenGroups)
+            {
+                if (group.NumberOfPens <= 0 || group.CapacityPerPen <= 0)
+                {
+                    throw new ArgumentException(
+                        "Each pen group must contain at least one pen and have a positive capacity.",
+                        nameof(buildingRequest));
+                }
+
+                for (var i = 0; i < group.NumberOfPens; i++)
+                {
+                    building.LastPenSequence++;
+                    building.NumberOfPens++;
+
+                    building.Pens.Add(new Pen
+                    {
+                        Id = Guid.NewGuid(),
+                        PenCode = CodeGenerator.Pen(
+                            building.BuildingCode,
+                            building.LastPenSequence
+                        ),
+                        Name = $"Pen {building.LastPenSequence:D3}",
+                        BuildingId = building.Id,
+                        Type = group.PenType,
+                        Capacity = group.CapacityPerPen,
+                        FarmId = farmId,
+                    });
+                }
+            }
+
 
             await _repo.AddAsync(building, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -119,7 +156,6 @@ namespace PigFarmManagement.Application.Services
 
             building.Name = updateBuildingRequest.Name;
             building.Status = updateBuildingRequest.Status;
-            building.Type = updateBuildingRequest.Type;
 
             _repo.Update(building);
             await _repo.SaveChangesAsync(cancellationToken);

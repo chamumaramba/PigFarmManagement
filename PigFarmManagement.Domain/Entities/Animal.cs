@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PigFarmManagement.Domain.Common;
 using PigFarmManagement.Domain.Enums;
+using PigFarmManagement.Domain.Entities;
 
 namespace PigFarmManagement.Domain.Entities
 {
@@ -11,13 +12,13 @@ namespace PigFarmManagement.Domain.Entities
     {
         public string TagNumber { get; set; } = string.Empty;
         public DateTime DateOfBirth { get; set; }
-        public decimal BirthWeight { get; set; }
-        public decimal CurrentWeight { get; set; }
+        public decimal? BirthWeight { get; set; }
+        public decimal? CurrentWeight { get; set; }
 
-        public Gender Gender { get; set; }
+        public Gender? Gender { get; set; }
 
         public AnimalOrigin AnimalOrigin{ get; set; }
-        public Breed Breed { get; set; }
+        public Breed? Breed { get; set; }
 
         // Foreign key to the Sow entity (Parent)
         public Guid? SowId { get; set; }
@@ -31,8 +32,8 @@ namespace PigFarmManagement.Domain.Entities
         public Guid? BatchId { get; set; }
         public Batch? Batch { get; set; }
 
-        public Guid FarmId { get; set; }
-        public Farm Farm { get; set;}
+        public Guid? LitterId { get; set; }
+        public Litter? Litter { get; set; }
 
         // Status
         public AnimalStatus Status { get; set; }

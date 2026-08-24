@@ -7,7 +7,7 @@ namespace PigFarmManagement.Domain.Entities
     public class BreedingRecord: FarmEntity
     {
         public Guid AnimalId { get; set; }
-        public Animal Animal { get; set; } = null!;
+        public Animal? Animal { get; set; }
 
         public Guid? SowId { get; set; }
         public Animal? Sow { get; set; }
@@ -19,9 +19,6 @@ namespace PigFarmManagement.Domain.Entities
         public DateTime? PregnancyCheckDate { get; set; }
         public bool? IsPregnant { get; set; }
         public DateTime? ExpectedFarrowingDate { get; set; }
-        public DateTime? FarrowingDate { get; set; }
-        public int? PigletsBornAlive { get; set; }
-        public int? PigletsBornDead { get; set; }
         public string Notes { get; set; } = string.Empty;
     }
 }

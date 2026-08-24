@@ -18,6 +18,12 @@ using PigFarmManagement.Application.DTOs.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Keep local development logs in the terminal. The Windows Event Log provider
+// can require elevated permissions and should not prevent the API from starting.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();

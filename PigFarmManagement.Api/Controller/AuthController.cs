@@ -23,10 +23,8 @@ namespace PigFarmManagement.Api.Controller
             if (tokens is null)
                 return Unauthorized();
 
-            Response.Cookies.Append("pf_access", tokens.AccessToken, AccessCookieOptions(tokens.ExpiresAt));
-            Response.Cookies.Append("pf_refresh", tokens.RefreshToken, RefreshCookieOptions());
-
-            return Ok(ApiResponse<object?>.SuccessResponse(null, "Login successful."));
+            // Temporary Swagger mode: return tokens so the current user's JWT can be copied into Authorize.
+            return Ok(ApiResponse<TokenResponse>.SuccessResponse(tokens, "Login successful."));
         }
 
         [HttpPost("register")]
@@ -47,7 +45,9 @@ namespace PigFarmManagement.Api.Controller
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
         {
-            var refreshToken = Request.Cookies["pf_refresh"];
+            var refreshToken = string.IsNullOrWhiteSpace(request.RefreshToken)
+                ? Request.Cookies["pf_refresh"]
+                : request.RefreshToken;
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return Unauthorized();
 
@@ -55,10 +55,8 @@ namespace PigFarmManagement.Api.Controller
             if (tokens is null)
                 return Unauthorized();
 
-            Response.Cookies.Append("pf_access", tokens.AccessToken, AccessCookieOptions(tokens.ExpiresAt));
-            Response.Cookies.Append("pf_refresh", tokens.RefreshToken, RefreshCookieOptions());
-
-            return NoContent();
+            // Temporary Swagger mode: return the replacement tokens instead of writing cookies.
+            return Ok(ApiResponse<TokenResponse>.SuccessResponse(tokens, "Token refreshed successfully."));
         }
 
         [HttpPost("revoke")]
@@ -92,7 +90,7 @@ namespace PigFarmManagement.Api.Controller
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var refreshToken = Request.Cookies["pf_access"];
+            var refreshToken = Request.Cookies["pf_refresh"];
 
             if (!string.IsNullOrWhiteSpace(refreshToken))
                 await _authService.RevokeTokenAsync(refreshToken);
@@ -110,9 +108,8 @@ namespace PigFarmManagement.Api.Controller
             SameSite = SameSiteMode.Lax,
             Expires = new DateTimeOffset(expiresAt),
             Path = "/"
-        };
-
-        private static CookieOptions RefreshCookieOptions() => new()
+         };
+         private static CookieOptions RefreshCookieOptions() => new()
         {
             HttpOnly = true,
             Secure = true,

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using PigFarmManagement.Domain.Entities;
+using PigFarmManagement.Infrastructure.Data;
 
 namespace PigFarmManagement.Infrastructure.Identity
 {
@@ -25,7 +27,7 @@ namespace PigFarmManagement.Infrastructure.Identity
         public static async Task SeedDevelopmentAdminAsync(
             UserManager<ApplicationUser> userManager,
             IConfiguration configuration,
-            PigFarmManagement.Infrastructure.Data.PigFarmDbContext db)
+            PigFarmDbContext db)
         {
             var adminEmail = (configuration["DevelopmentSeed:AdminEmail"]
                 ?? "admin@pigfarm.local").Trim();
@@ -62,7 +64,7 @@ namespace PigFarmManagement.Infrastructure.Identity
                 var farm = db.Farms.FirstOrDefault();
                 if (farm == null)
                 {
-                    farm = new PigFarmManagement.Domain.Entities.Farm
+                    farm = new Farm
                     {
                         Id = Guid.NewGuid(),
                         Name = configuration["DevelopmentSeed:FarmName"] ?? "Demo Farm",
@@ -104,7 +106,7 @@ namespace PigFarmManagement.Infrastructure.Identity
                 var farm = db.Farms.FirstOrDefault();
                 if (farm == null)
                 {
-                    farm = new PigFarmManagement.Domain.Entities.Farm
+                    farm = new Farm
                     {
                         Id = Guid.NewGuid(),
                         Name = configuration["DevelopmentSeed:FarmName"] ?? "Demo Farm",
@@ -128,7 +130,7 @@ namespace PigFarmManagement.Infrastructure.Identity
             var devFarm = db.Farms.FirstOrDefault();
             if (devFarm == null)
             {
-                devFarm = new PigFarmManagement.Domain.Entities.Farm
+                devFarm = new Farm
                 {
                     Id = Guid.NewGuid(),
                     Name = configuration["DevelopmentSeed:FarmName"] ?? "Demo Farm",

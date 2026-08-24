@@ -23,7 +23,8 @@ namespace PigFarmManagement.Application.Services
                 throw new InvalidOperationException("A farm with the same name already exists.");
             }
             var farmCount = await _repo.GetFarmcountAsync(cancellationToken);
-            var farmcode = FarmCodeGenerator.GenerateFarmCode(request.Name, farmCount + 1);
+            var farmInitials = CodeGenerator.GetInitials(request.Name);
+            var farmcode = CodeGenerator.Farm(farmInitials, farmCount + 1);
 
             var farm = new Farm
 
@@ -40,8 +41,6 @@ namespace PigFarmManagement.Application.Services
 
             await _repo.AddAsync(farm, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
-
-
 
             return FarmMapper.ToResponse(farm);
 
